@@ -10,18 +10,26 @@ DataFlow
 =========
 
 sound waves from my mouth to the microphone
--> NatSpeak (i.e. Dragon NaturallySpeaking) does expensive proprietary magic on the audio
--> Microsoft's SAPI (i.e. speech API) upon COM (maybe?)
--> NatLink (i.e. a NatSpeak plug-in), in C++
--> a `gotResultsObject` callback method, of a `load(allResults = True)` grammar object, gets called with the text, in NatLink's python bindings
--> a JSON request, with words and rules, over host-only network, from guest to host
--> the Haskell server, which `parse`s the phrase to commands, and `compile`s commands to actions, and `execute`s the actions
--> call Objective-C with the FFI (i.e. in memory), via the language-c-bindings library
--> return the current application, via `NSWorkspace`, called by Haskell's `compile`
--> send a quartz event, via `CGEventCreateKeyboardEvent` and `CGEventCreateMouseEvent`, called by Haskell's `execute`
--> photons from the screen to my eyes, a smile if it works :-)
 
-this project only does the dataflow from the Haskell server to the OS X application.
+-> NatSpeak (i.e. Dragon NaturallySpeaking) does expensive proprietary magic on the audio
+
+-> Microsoft's `SAPI` (i.e. speech API) upon `COM` (maybe?)
+
+-> NatLink (i.e. a NatSpeak plug-in), in C++
+
+-> a `gotResultsObject` callback method, of a `load(allResults = True)` grammar object, gets called with the text, in NatLink's python bindings
+
+-> a `JSON` request, with words and rules, over host-only network, from guest to host
+
+-> the Haskell server, which `parse`s the phrase to commands, and `compile`s commands to actions, and `execute`s the actions
+
+-> call Objective-C with the FFI (i.e. in memory), via the `language-c-inline` package
+
+-> return the current application, via `NSWorkspace`, called by Haskell's `compile`
+
+-> make a quartz event, via `CGEventCreateKeyboardEvent` or `CGEventCreateMouseEvent`, then send the event via `CGEventPostToPSN` or `CGEventPost`, called by Haskell's `execute`
+
+(this project only does the dataflow from the Haskell server to the OS X application.)
 
 
 Requirements
@@ -46,7 +54,8 @@ as of Autumn 2014, my setup's versions are:
 may work on older or newer versions of the above, but untested.
 
 
-TODO
+
+Extensions
 ==========
 
 I'd like to be able to define the grammar in one place. The Haskell code grammar on the host, and the NatLink BNF grammar on the guest, are two places. I'd also like the Haskell grammar to be static (i.e. each command is a variant), and for the grammar to be easily editable, so I may need to learn Template Haskell.
@@ -60,4 +69,7 @@ Make the dataflow a nice D3 graph.
 Once I switch to developing with Linux, I may be able to integrate with XMonad, for more speed (?) and more context.
 
 it would be nice if the two calls, from Haskell to Objective-C, were atomic e.g. by passing the current application back in.
+
+Generalize applications to any context (e.g. page in a tab in the browser, buffer in Emacs, present working directory in terminal). Now, I may need to "lift" contexts into applications, by copying and pasting Emacs.app into Terminal.app, or making Firefox.app my music player by exclusively having YouTube.
+
 

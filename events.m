@@ -9,12 +9,11 @@ ProcessSerialNumber currentApplication()
   // need the Carbon PSN
   // launchedApplications is deprecated
   NSDictionary *appInfo = [[NSWorkspace sharedWorkspace] activeApplication];
+  // NSLog(@"%@", appInfo);
 
   ProcessSerialNumber psn;
   psn.highLongOfPSN = [[appInfo objectForKey:@"NSApplicationProcessSerialNumberHigh"] unsignedIntValue];
   psn.lowLongOfPSN = [[appInfo objectForKey:@"NSApplicationProcessSerialNumberLow"] unsignedIntValue];
-
-  NSLog(@"%@", appInfo);
 
   return psn;
 }
@@ -35,8 +34,6 @@ ProcessSerialNumber currentApplication()
 
 void pressKey(CGKeyCode key, CGEventFlags command, CGEventFlags control, CGEventFlags shift, CGEventFlags option, CGEventFlags function)
 {
-  @autoreleasepool {
-
     // events to press a key
     CGEventRef event1 = CGEventCreateKeyboardEvent(NULL, key, true); // key down
     CGEventRef event2 = CGEventCreateKeyboardEvent(NULL, key, false); // key up
@@ -51,27 +48,21 @@ void pressKey(CGKeyCode key, CGEventFlags command, CGEventFlags control, CGEvent
     CGEventPostToPSN(&psn, event1);
     CGEventPostToPSN(&psn, event2);
 
-    // must manually release objects from methods named with "Create" or "Copy"
-    CFRelease(event1);
-    CFRelease(event2);
-
-  }
 }
 
 CGPoint currentMousePosition()
 {
   CGEventRef event = CGEventCreate(NULL);
   CGPoint point = CGEventGetLocation(event);
-  CFRelease(event);
+  // NSLog(@"x= %f, y = %f", (float)mousePosition.x, (float)mousePosition.y);
+
   return point;
 }
 
 void clickMouse(CGEventType mouseDown, CGEventType mouseUp, CGMouseButton mouseButton, UInt32 clickCount, CGEventFlags command)
 {
 
-  @autoreleasepool {
   CGPoint mousePosition = currentMousePosition();
-  NSLog(@"x= %f, y = %f", (float)mousePosition.x, (float)mousePosition.y);
 
   CGEventRef event1 = CGEventCreateMouseEvent(NULL, mouseDown, mousePosition, mouseButton);
   CGEventRef event2 = CGEventCreateMouseEvent(NULL, mouseUp,   mousePosition, mouseButton);
@@ -93,20 +84,20 @@ void clickMouse(CGEventType mouseDown, CGEventType mouseUp, CGMouseButton mouseB
   CGEventPost(kCGHIDEventTap, event1);
   CGEventPost(kCGHIDEventTap, event2);
 
-  CFRelease(event1);
-  CFRelease(event2);
-  }
 }
 
 
 int main(int argc, char** argv)
 {
+  // Automatic Reference Counting (ARC)
+  @autoreleasepool {
 
   // double-click the mouse while holding command, at current location
   clickMouse(kCGEventLeftMouseDown, kCGEventLeftMouseUp, kCGMouseButtonLeft, 2, kCGEventFlagMaskCommand);
 
   // type command-shift-n, into current application
   pressKey(kVK_ANSI_N, kCGEventFlagMaskCommand, 0, kCGEventFlagMaskShift, 0, 0);
+  }
 
   return 0;
 }
