@@ -1,3 +1,4 @@
+# Haskell
 dist
 cabal-dev
 *.o
@@ -9,3 +10,14 @@ cabal-dev
 .cabal-sandbox/
 cabal.sandbox.config
 cabal.config
+
+# Emacs
+\#*
+*~
+.#*
+\#*\#
+*.log
+
+# OS X
+.DS_Store
+
