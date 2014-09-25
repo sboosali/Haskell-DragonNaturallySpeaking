@@ -58,9 +58,55 @@ void pressKey(CGKeyCode key, CGEventFlags command, CGEventFlags control, CGEvent
   }
 }
 
-int main(int argc, char** argv)
+CGPoint currentMousePosition()
 {
-  pressKey(kVK_ANSI_N, kCGEventFlagMaskCommand, 0, kCGEventFlagMaskShift, 0, 0);
-  return 0;
+  CGEventRef event = CGEventCreate(NULL);
+  CGPoint point = CGEventGetLocation(event);
+  CFRelease(event);
+  return point;
 }
 
+void clickMouse(CGEventType mouseDown, CGEventType mouseUp, CGMouseButton mouseButton, UInt32 clickCount, CGEventFlags command)
+{
+
+  @autoreleasepool {
+  CGPoint mousePosition = currentMousePosition();
+  NSLog(@"x= %f, y = %f", (float)mousePosition.x, (float)mousePosition.y);
+
+  CGEventRef event1 = CGEventCreateMouseEvent(NULL, mouseDown, mousePosition, mouseButton);
+  CGEventRef event2 = CGEventCreateMouseEvent(NULL, mouseUp,   mousePosition, mouseButton);
+
+  // (necessary, but isn't it already set in constructor?)
+  CGEventSetType(event1, mouseDown);
+  CGEventSetType(event2, mouseUp);
+
+  // hold down modifier key while clicking
+  CGEventSetFlags(event1, command);
+  CGEventSetFlags(event2, command);
+
+  // for double-click
+  // flaky: maybe better to repeat `CGEventPost`
+  CGEventSetIntegerValueField(event1, kCGMouseEventClickState, clickCount);
+  CGEventSetIntegerValueField(event2, kCGMouseEventClickState, clickCount);
+
+  // kCGHIDEventTap "specifies that an event tap is placed at the point where HID system events enter the window server."
+  CGEventPost(kCGHIDEventTap, event1);
+  CGEventPost(kCGHIDEventTap, event2);
+
+  CFRelease(event1);
+  CFRelease(event2);
+  }
+}
+
+
+int main(int argc, char** argv)
+{
+
+  // double-click the mouse while holding command, at current location
+  clickMouse(kCGEventLeftMouseDown, kCGEventLeftMouseUp, kCGMouseButtonLeft, 2, kCGEventFlagMaskCommand);
+
+  // type command-shift-n, into current application
+  pressKey(kVK_ANSI_N, kCGEventFlagMaskCommand, 0, kCGEventFlagMaskShift, 0, 0);
+
+  return 0;
+}
