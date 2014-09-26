@@ -1,0 +1,107 @@
+-- http://haskell.org/cabal/users-guide/
+
+-- $ cabal sandbox init                  # initialise the sandbox
+-- $ cabal install --only-dependencies   # install dependencies into the sandbox
+-- $ cabal configure                     # ?
+-- $ cabal build                         # build your package inside the sandbox
+
+-- $ cabal run 1 2 3
+-- # passes "1" "2" "3" to the file in `main-is` under `executable`
+
+-- $ cabal repl
+-- # loads modules in `exposed-modules` under `library` (into ghci)
+-- # Prelude Commands> parse "1 2 3"
+
+-- $ cabal install --enable-tests
+-- $ cabal configure --enable-tests
+-- $ cabal build --enable-tests
+-- $ cabal test
+-- # runs tests in the file in `main-is` under `test-suite`
+
+-- # ls dist/build/
+-- # rm -fr dist/
+
+
+-- The name of the package.
+name: commands
+
+-- http://semver.org/
+--       +--------- breaking API changes
+--       | +----- non-breaking API additions
+--       | | +--- code changes with no API change
+version: 0.0.0
+
+-- a short description, shows up in the search result from hackage
+synopsis:
+-- a longer description
+description:
+
+homepage: https://github.com/sboosali/Haskell-DragonNaturallySpeaking
+
+license: GPL-3
+license-file: LICENSE
+
+author: Sam Boosalis
+maintainer: samboosalis@gmail.com
+
+category:
+
+build-type: Simple
+
+-- extra files to be distributed with the package
+extra-source-files:
+ README.md
+
+-- extra files to be distributed with the package
+-- access with:
+--  getDataFileName :: FilePath -> IO FilePath
+--  file <- getDataFileName "data/file.txt"
+--  data <- readFile file
+data-files:
+
+-- constraint on the version of Cabal needed to build this package
+cabal-version:       >=1.10
+
+
+library
+  -- modules exported by the library
+  exposed-modules:
+   Commands
+
+  -- directories with source files
+  hs-source-dirs: libraries
+
+  -- modules included in this library but not exported
+  -- other-modules:
+
+  -- LANGUAGE extensions used by modules in this package
+  -- other-extensions:
+
+  -- base language which the package is written in
+  default-language: Haskell2010
+
+  ghc-options: -Wall
+
+  -- other library packages from which modules are imported
+  build-depends:
+   -- happy, alex, -- (cabal doesn't install executables before dependents? well it fixed my setup bug)
+   language-c-inline,
+   base ==4.7.*
+
+
+test-suite tests
+  main-is:        tests.hs
+  hs-source-dirs: tests
+
+  -- cabal will say the tests pass only if `main-is` exits with zero
+  type: exitcode-stdio-1.0
+
+  default-language: Haskell2010
+  ghc-options: -Wall
+
+  build-depends:
+   commands,
+   QuickCheck, HUnit,
+   test-framework, test-framework-hunit, test-framework-quickcheck2,
+   base
+
