@@ -1,8 +1,11 @@
-all: events
-	./events
+OUTPUT = bin
 
-events: events.m events.h
-	gcc  events.m  -o events  -ObjC -framework Cocoa
+all: events
+	$(OUTPUT)/events
+
+events: events.m
+	mkdir $(OUTPUT) || true 
+	gcc  events.m  -o $(OUTPUT)/events  -ObjC -framework Cocoa
 
 clean:
-	rm -f events
+	rm -f $(OUTPUT)/events

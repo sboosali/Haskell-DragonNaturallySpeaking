@@ -69,7 +69,7 @@ library
    Commands
 
   -- directories with source files
-  hs-source-dirs: libraries
+  hs-source-dirs: sources
 
   -- modules included in this library but not exported
   -- other-modules:
@@ -87,21 +87,4 @@ library
    -- happy, alex, -- (cabal doesn't install executables before dependents? well it fixed my setup bug)
    language-c-inline,
    base ==4.7.*
-
-
-test-suite tests
-  main-is:        tests.hs
-  hs-source-dirs: tests
-
-  -- cabal will say the tests pass only if `main-is` exits with zero
-  type: exitcode-stdio-1.0
-
-  default-language: Haskell2010
-  ghc-options: -Wall
-
-  build-depends:
-   commands,
-   QuickCheck, HUnit,
-   test-framework, test-framework-hunit, test-framework-quickcheck2,
-   base
 

@@ -1,3 +1,7 @@
+# my
+bin/
+ignore/
+
 # Haskell
 dist
 cabal-dev
