@@ -2,7 +2,6 @@
 
 -- $ cabal sandbox init                  # initialise the sandbox
 -- $ cabal install --only-dependencies   # install dependencies into the sandbox
--- $ cabal configure                     # ?
 -- $ cabal build                         # build your package inside the sandbox
 
 -- $ cabal run 1 2 3
@@ -65,7 +64,7 @@ cabal-version:       >=1.10
 library
   -- modules exported by the library
   exposed-modules:
-   Bits, Types
+   Commands.Types, Commands.Bits
 
   -- directories with source files
   hs-source-dirs: sources

@@ -1,4 +1,4 @@
-module Etc where
+module Commands.Etc where
 
 -- https://hackage.haskell.org/package/bool-extras-0.4.0/docs/src/Data-Bool-Extras.html#bool
 {-# INLINE bool #-}

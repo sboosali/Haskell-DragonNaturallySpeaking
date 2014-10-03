@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeSynonymInstances #-}
-module Bits where
-import Etc
+module Commands.Bits where
+import Commands.Etc
 
 import Data.BitVector
 import Data.List

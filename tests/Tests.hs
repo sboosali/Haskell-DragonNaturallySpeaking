@@ -7,7 +7,7 @@ import Test.HUnit
 
 import Data.BitVector
 
-import Bits
+import Commands.Bits
 
 
 newtype Hexadecimal = Hexadecimal String
