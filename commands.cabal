@@ -14,9 +14,8 @@
 
 -- $ cabal install --enable-tests
 -- $ cabal configure --enable-tests
--- $ cabal build --enable-tests
--- $ cabal test
--- # runs tests in the file in `main-is` under `test-suite`
+-- $ cabal build && cabal test
+-- # runs tests in the `main` function in the file in `main-is` under `test-suite`
 
 -- # ls dist/build/
 -- # rm -fr dist/
@@ -66,7 +65,7 @@ cabal-version:       >=1.10
 library
   -- modules exported by the library
   exposed-modules:
-   Commands
+   Bits, Types
 
   -- directories with source files
   hs-source-dirs: sources
@@ -85,6 +84,25 @@ library
   -- other library packages from which modules are imported
   build-depends:
    -- happy, alex, -- (cabal doesn't install executables before dependents? well it fixed my setup bug)
+   bv,
    language-c-inline,
+   base ==4.7.*
+
+test-suite tests
+  main-is:        Tests.hs
+  hs-source-dirs: tests
+
+  -- cabal will say the tests pass only if `main-is` exits with zero
+  type: exitcode-stdio-1.0
+
+  default-language: Haskell2010
+  ghc-options:
+
+  build-depends:
+   commands,
+   bv,
+
+   QuickCheck, HUnit,
+   test-framework, test-framework-quickcheck2, test-framework-hunit,
    base ==4.7.*
 
