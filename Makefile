@@ -1,11 +1,31 @@
-OUTPUT = bin
+HC         = cabal exec -- ghc
+LIBDIR     = $(shell $(HC) --print-libdir)
+CFLAGS     = -fobjc-arc -I$(LIBDIR)/include -I$(LIBDIR)/../../includes
+HCFLAGS    = 
+PACKAGES   = -package template-haskell -package language-c-quote -package language-c-inline
+FRAMEWORKS = -framework Carbon -framework Cocoa
+LDFLAGS    = $(PACKAGES) $(FRAMEWORKS) 
 
-all: events
-	$(OUTPUT)/events
+OBJS = Main.o Main_objc.o
+NAME = Events
 
-events: events.m
-	mkdir $(OUTPUT) || true 
-	gcc  events.m  -o $(OUTPUT)/events  -ObjC -framework Cocoa
 
+default: execute
 clean:
-	rm -f $(OUTPUT)/events
+	rm -f *.o *.hi Main_objc.[hm] $(NAME)
+.PHONY: default clean
+
+
+execute: $(NAME)
+	./$(NAME)
+
+$(NAME): $(OBJS)
+	$(HC) -o $@ $^ $(LDFLAGS)
+
+Main_objc.m: Main.o
+
+Main.o:
+
+%.o: %.hs
+	$(HC) -c $< $(HCFLAGS)
+
