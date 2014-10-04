@@ -1,24 +1,27 @@
 #include <Cocoa/Cocoa.h>
 #import <Carbon/Carbon.h>
 
-#include "events.h"
 
+NSString currentApplicationPath()
+{
+  return [[[NSWorkspace sharedWorkspace] activeApplication] objectForKey:@"NSApplicationPath"];
+}
 
 ProcessSerialNumber currentApplication()
 {
-  // need the Carbon PSN
-  // launchedApplications is deprecated
   NSDictionary *appInfo = [[NSWorkspace sharedWorkspace] activeApplication];
-  // NSLog(@"%@", appInfo);
 
+  // need the Carbon PSN
   ProcessSerialNumber psn;
   psn.highLongOfPSN = [[appInfo objectForKey:@"NSApplicationProcessSerialNumberHigh"] unsignedIntValue];
-  psn.lowLongOfPSN = [[appInfo objectForKey:@"NSApplicationProcessSerialNumberLow"] unsignedIntValue];
+  psn.lowLongOfPSN  = [[appInfo objectForKey:@"NSApplicationProcessSerialNumberLow"]  unsignedIntValue];
 
   return psn;
 }
 
 /*
+
+  // NSLog(@"%@", appInfo);
 
   NSDictionary: {
   NSApplicationBundleIdentifier = "org.gnu.Emacs";
@@ -32,15 +35,15 @@ ProcessSerialNumber currentApplication()
 
 */
 
-void pressKey(CGKeyCode key, CGEventFlags command, CGEventFlags control, CGEventFlags shift, CGEventFlags option, CGEventFlags function)
+void pressKey(CGKeyCode key, CGEventFlags flags)
 {
     // events to press a key
     CGEventRef event1 = CGEventCreateKeyboardEvent(NULL, key, true); // key down
     CGEventRef event2 = CGEventCreateKeyboardEvent(NULL, key, false); // key up
 
     // add modifiers ('command-shift-key') to event
-    CGEventSetFlags(event1, command | control | shift | option | function);
-    CGEventSetFlags(event2, command | control | shift | option | function);
+    CGEventSetFlags(event1, flags);
+    CGEventSetFlags(event2, flags);
 
     ProcessSerialNumber psn = currentApplication();
 
@@ -59,7 +62,7 @@ CGPoint currentMousePosition()
   return point;
 }
 
-void clickMouse(CGEventType mouseDown, CGEventType mouseUp, CGMouseButton mouseButton, UInt32 clickCount, CGEventFlags command)
+void clickMouse(CGEventType mouseDown, CGEventType mouseUp, CGMouseButton mouseButton, UInt32 clickCount, CGEventFlags flags)
 {
 
   CGPoint mousePosition = currentMousePosition();
@@ -96,7 +99,7 @@ int main(int argc, char** argv)
   clickMouse(kCGEventLeftMouseDown, kCGEventLeftMouseUp, kCGMouseButtonLeft, 2, kCGEventFlagMaskCommand);
 
   // type command-shift-n, into current application
-  pressKey(kVK_ANSI_N, kCGEventFlagMaskCommand, 0, kCGEventFlagMaskShift, 0, 0);
+  pressKey(kVK_ANSI_N, kCGEventFlagMaskCommand | kCGEventFlagMaskShift);
   }
 
   return 0;
