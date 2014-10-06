@@ -13,6 +13,8 @@ NAME = Events
 default: execute
 clean:
 	rm -f *.o *.hi Main_objc.[hm] $(NAME)
+	rm -f report.html
+	rm -fr dist
 .PHONY: default clean
 
 

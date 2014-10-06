@@ -13,3 +13,5 @@
 
  Haskell: spawn another thread to keep polling the current application
 
+ make an Emacs server, responds with current buffer
+
