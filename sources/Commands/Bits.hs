@@ -2,18 +2,24 @@
 module Commands.Bits where
 import Commands.Etc
 
-import Data.BitVector
-import Data.List
 import Control.Arrow
+import Data.List
+import Data.String
+import Data.BitVector
+import Data.Char
 
 
+-- | orphan @instance@ and @IsString@ abuse
+instance (IsString BitVector) where
+ fromString = readsBitVector
+
+-- | orphan @instance@
 instance (Read BitVector) where
- readsPrec _ = readsBitVector
+ readsPrec _ text = [(readsBitVector text, "")]
 
--- "e.g. @read \"0x00080000\"@"
-readsBitVector ('0':'x':digits) = [(readsHexadecimal digits, "")]
-readsBitVector ('0':'b':digits) = [(readsBinary digits, "")]
-readsBitVector _ = []
+readsBitVector ('0':'x':digits) = readsHexadecimal digits
+readsBitVector ('0':'b':digits) = readsBinary digits
+readsBitVector _ = undefined --TODO partial function
 
 readsBinary digits = bitVec size $ fromBits bits
  where
@@ -24,8 +30,9 @@ bin2bits '0' = False
 bin2bits '1' = True
 bin2bits _   = undefined --TODO partial function
 
-readsHexadecimal hexes = bitVec size $ fromBits bits
+readsHexadecimal digits = bitVec size $ fromBits bits
  where
+ Hexadecimal hexes = hexadecimal digits
  size = length hexes * 4 -- each hex is four bits
  bits = concatMap hex2bits hexes
 
@@ -45,8 +52,23 @@ hex2bits 'C' = [True ,True ,False,False]
 hex2bits 'D' = [True ,True ,False,True ]
 hex2bits 'E' = [True ,True ,True ,False]
 hex2bits 'F' = [True ,True ,True ,True ]
+hex2bits 'a' = hex2bits 'A'
+hex2bits 'b' = hex2bits 'B'
+hex2bits 'c' = hex2bits 'C'
+hex2bits 'd' = hex2bits 'D'
+hex2bits 'e' = hex2bits 'E'
+hex2bits 'f' = hex2bits 'F'
 hex2bits _   = undefined --TODO partial function
 
--- @showBits . toBits . readHexes@
-showBits = map (bool 0 1) >>> map show >>> intercalate ""
+newtype Hexadecimal = Hexadecimal String deriving (Show)
 
+-- | smart constructor for @Hexadecimal@
+hexadecimal :: String -> Hexadecimal
+hexadecimal = smart failHexadecimal Hexadecimal isHexadecimal
+
+failHexadecimal = show >>> ("hexadecimal: "++)
+
+isHexadecimal = all isHexDigit
+
+-- | e.g. @showBits . toBits . readsHexadecimal@
+showBits = map (bool 0 1) >>> map show >>> intercalate ""

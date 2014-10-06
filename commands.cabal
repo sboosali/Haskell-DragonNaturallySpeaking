@@ -64,7 +64,7 @@ cabal-version:       >=1.10
 library
   -- modules exported by the library
   exposed-modules:
-   Commands.Types, Commands.Bits
+   Commands.Types, Commands.Bits, Commands.Etc
 
   -- directories with source files
   hs-source-dirs: sources
