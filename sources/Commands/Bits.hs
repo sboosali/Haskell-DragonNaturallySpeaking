@@ -1,4 +1,3 @@
-{-# LANGUAGE TypeSynonymInstances #-}
 module Commands.Bits where
 import Commands.Etc
 
@@ -8,14 +7,6 @@ import Data.String
 import Data.BitVector
 import Data.Char
 
-
--- | orphan @instance@ and @IsString@ abuse
-instance (IsString BitVector) where
- fromString = readsBitVector
-
--- | orphan @instance@
-instance (Read BitVector) where
- readsPrec _ text = [(readsBitVector text, "")]
 
 readsBitVector ('0':'x':digits) = readsHexadecimal digits
 readsBitVector ('0':'b':digits) = readsBinary digits

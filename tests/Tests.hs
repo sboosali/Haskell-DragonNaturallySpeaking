@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
+import Commands.Instances()
 import Commands.Bits
 import Commands.OSX.Bridge
 
