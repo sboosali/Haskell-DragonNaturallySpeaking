@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Commands.OSX.Constants where
 import Commands.OSX.Types
-import Commands.Types
+import Commands.Types hiding (EscapeKey, DeleteKey)
 import Commands.Instances()
 
 import Control.Arrow
@@ -9,26 +9,34 @@ import Data.BitVector hiding (foldl)
 import Foreign.C.Types
 
 
--- | Haskell enum-list ~ Objective-C bit-mask
+-- | relates Haskell types with Objective-C types:
 --
--- Haskell @[Modifier]@ ~ Objective-C @CGEventFlags@
+-- * Haskell enum-list ~ Objective-C bit-mask
+-- * Haskell @['Modifier']@ ~ Objective-C @CGEventFlags@
+-- * Haskell 'CULLong' ~ Objective-C @uint64_t@
 --
--- Haskell @CULLong@ ~ Objective-C @uint64_t@
+-- 'CULLong' can be marshaled
 --
--- "Bit-vectors are interpreted as unsigned integers (i.e. natural numbers)"
+-- @typedef unsigned long long uint64_t;@
+--
+-- @typedef uint64_t CGEventFlags;@
+--
+-- line 98 of </System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/CoreGraphics.framework/Versions/A/Headers/CGEventTypes.h>
 --
 -- the folded bitvector size, is the initial bitvector size: 
 --
--- >>> showBits $ toBits $ zeros 64 .|. ones 32 
--- "0000000000000000000000000000000011111111111111111111111111111111"
+-- >>> showBits $ toBits $ zeros 4 .|. ones 2 
+-- "0011"
 --
 -- >>> foldl (+) 0 [1,2,3]
 -- ((0 + 1) + 2) + 3
 --
+-- "Bit-vectors are interpreted as unsigned integers (i.e. natural numbers)"
+--
 mask :: [Modifier] -> CULLong
 mask = map mask' >>> foldl (.|.) (zeros 64) >>> uint >>> fromIntegral >>> CULLong
 
--- | from line 236 of </System/Library/Frameworks/IOKit.framework/Versions/A/Headers/hidsystem/IOLLEvent.h> 
+-- | line 236 of </System/Library/Frameworks/IOKit.framework/Versions/A/Headers/hidsystem/IOLLEvent.h> 
 mask' :: Modifier -> BitVector
 mask' Command  = "0x00100000"
 mask' Control  = "0x00040000"
@@ -36,10 +44,23 @@ mask' Shift    = "0x00020000"
 mask' Option   = "0x00080000"
 mask' Function = "0x00800000"
 
-code :: VirtualKey -> CULLong
-code = code' >>> uint >>> fromIntegral >>> CULLong
+-- | relates Haskell types with Objective-C types:
+--
+-- * Haskell 'VirtualKey' ~ Objective-C @CGKeyCode@
+-- * Haskell 'CUShort' ~ Objective-C @uint16_t@
+--
+-- 'CUShort' can be marshaled
+--
+-- @typedef unsigned short uint16_t;@
+--
+-- @typedef uint16_t CGKeyCode;@
+--
+-- line 34 of </System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/CoreGraphics.framework/Versions/A/Headers/CGRemoteOperation.h>
+--
+code :: VirtualKey -> CUShort
+code = code' >>> uint >>> fromIntegral >>> CUShort
 
--- | from line 196 of </System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Headers/Events.h>
+-- | line 196 of </System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Headers/Events.h>
 code' :: VirtualKey -> BitVector
 code' AKey             = "0x00"
 code' SKey             = "0x01"

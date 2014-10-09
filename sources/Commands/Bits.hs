@@ -8,25 +8,31 @@ import Data.BitVector
 import Data.Char
 
 
+-- | parses hexadecimal ("0x") and binary ("0b") "literals"
+readsBitVector :: String -> BitVector
 readsBitVector ('0':'x':digits) = readsHexadecimal digits
 readsBitVector ('0':'b':digits) = readsBinary digits
 readsBitVector _ = undefined --TODO partial function
 
+readsBinary :: String -> BitVector
 readsBinary digits = bitVec size $ fromBits bits
  where
  size = length digits
- bits = map bin2bits digits
+ bits = map bin2bit digits
 
-bin2bits '0' = False
-bin2bits '1' = True
-bin2bits _   = undefined --TODO partial function
+bin2bit :: Char -> Bool
+bin2bit '0' = False
+bin2bit '1' = True
+bin2bit _   = undefined --TODO partial function
 
+readsHexadecimal :: String -> BitVector
 readsHexadecimal digits = bitVec size $ fromBits bits
  where
  Hexadecimal hexes = hexadecimal digits
  size = length hexes * 4 -- each hex is four bits
  bits = concatMap hex2bits hexes
 
+hex2bits :: Char -> [Bool]
 hex2bits '0' = [False,False,False,False]
 hex2bits '1' = [False,False,False,True ]
 hex2bits '2' = [False,False,True ,False]
@@ -55,9 +61,9 @@ newtype Hexadecimal = Hexadecimal String deriving (Show)
 
 -- | smart constructor for @Hexadecimal@
 hexadecimal :: String -> Hexadecimal
-hexadecimal = smart failHexadecimal Hexadecimal isHexadecimal
+hexadecimal = smart notHexadecimal Hexadecimal isHexadecimal
 
-failHexadecimal = show >>> ("hexadecimal: "++)
+notHexadecimal = show >>> ("hexadecimal: "++)
 
 isHexadecimal = all isHexDigit
 
