@@ -1,7 +1,5 @@
 -- http://haskell.org/cabal/users-guide/
 
--- $ cabal install --haddock-hyperlink-source --dependencies-only --enable-tests
-
 -- $ cabal sandbox init                  # initialise the sandbox
 -- $ cabal install --only-dependencies   # install dependencies into the sandbox
 -- $ cabal build                         # build your package inside the sandbox
@@ -11,7 +9,8 @@
 
 -- $ cabal repl
 -- # loads modules in `exposed-modules` under `library` (into ghci)
--- # Prelude Commands> parse "1 2 3"
+-- Commands>
+-- Commands> :set -XOverloadedStrings
 
 -- $ cabal install --enable-tests
 -- $ cabal configure --enable-tests
@@ -19,6 +18,7 @@
 -- # runs tests in the `main` function in the file in `main-is` under `test-suite`
 
 -- $ cabal haddock && open dist/doc/html/commands/index.html
+-- .cabal-sandbox/share/doc/$COMPILER/$PACKAGE-VERSION/html/$MODULE
 
 -- # ls dist/build/
 -- # rm -fr dist/
@@ -72,7 +72,7 @@ library
 
   -- modules exported by the library
   exposed-modules:
-   Commands.Types, Commands.Bits, Commands.Instances,
+   Commands.Types, Commands.Bits, Commands.Instances, Commands.Munging,
    Commands.OSX.Constants, Commands.OSX.Types, Commands.OSX.Bridge
 
   -- modules included in this library, but not exported
@@ -89,6 +89,8 @@ library
   -- other library packages from which modules are imported
   build-depends:
    -- happy, alex, -- (cabal doesn't install executables before dependents? well it fixed my setup bug)
+   safe,
+   system-filepath,
    split,
    parsec ==3.1.*,
    data-default,

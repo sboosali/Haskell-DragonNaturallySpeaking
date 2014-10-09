@@ -44,6 +44,9 @@ positive :: Integer -> Positive
 positive = smart def Positive_ (>= 1) 
 
 
-data Context = Application String
- deriving (Show)
-
+data Application
+ = ApplicationPath String
+ | GoogleChrome
+ | Emacs
+ | Terminal
+ deriving (Show, Read, Eq, Ord)
