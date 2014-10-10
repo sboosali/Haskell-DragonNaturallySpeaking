@@ -32,3 +32,7 @@ either2maybe = either (const Nothing) Just
 -- | transform from @[a]@, like @maybe@ or @either@
 list empty _ [] = empty
 list _     f xs = f xs
+
+failed :: (Monad m) => m a
+failed = fail ""
+
