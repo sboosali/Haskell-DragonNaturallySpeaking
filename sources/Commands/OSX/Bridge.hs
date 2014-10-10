@@ -56,4 +56,3 @@ isConstructor (first:rest) = isUpper first && isIdentifier rest
 isIdentifier :: String -> Bool
 isIdentifier = all ((||) <$> isAlphaNum <*> (`elem` "_'"))
 
-

@@ -15,3 +15,5 @@
 
  make an Emacs server, responds with current buffer
 
+ I want to easily extend: by adding commands; by adding applications; their command-to-keypress compilations; etc. typeclasses?
+
