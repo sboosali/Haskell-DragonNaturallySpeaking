@@ -36,12 +36,10 @@ data MouseButton = LeftButton | MiddleButton | RightButton
  deriving (Show)
 
 -- | refinement
-newtype Positive = Positive_ Integer
- deriving (Show)
-
+newtype Positive = Positive_ Integer deriving (Show)
 -- | smart constructor for @positive@
-positive :: Integer -> Positive
-positive = smart def Positive_ (>= 1) 
+positive :: (Monad m) => Integer -> m Positive
+positive = smart (("smart: " ++) . show) Positive_ (>= 1) 
 
 
 data Application

@@ -1,3 +1,4 @@
+{-# LANGUAGE ViewPatterns #-}
 module Commands.Bits where
 import Commands.Etc
 
@@ -9,29 +10,35 @@ import Data.Char
 
 
 -- | parses hexadecimal ("0x") and binary ("0b") "literals"
+-- prop> partial function
 readsBitVector :: String -> BitVector
 readsBitVector ('0':'x':digits) = readsHexadecimal digits
 readsBitVector ('0':'b':digits) = readsBinary digits
-readsBitVector _ = undefined --TODO partial function
 
+-- |
+-- prop> partial function
 readsBinary :: String -> BitVector
-readsBinary digits = bitVec size $ fromBits bits
+readsBinary (binary -> Just (Binary digits)) = bitVec size $ fromBits bits
  where
  size = length digits
  bits = map bin2bit digits
 
+-- |
+-- prop> partial function
 bin2bit :: Char -> Bool
 bin2bit '0' = False
 bin2bit '1' = True
-bin2bit _   = undefined --TODO partial function
 
+-- |
+-- prop> partial function
 readsHexadecimal :: String -> BitVector
-readsHexadecimal digits = bitVec size $ fromBits bits
+readsHexadecimal (hexadecimal -> Just (Hexadecimal digits)) = bitVec size $ fromBits bits
  where
- Hexadecimal hexes = hexadecimal digits
- size = length hexes * 4 -- each hex is four bits
- bits = concatMap hex2bits hexes
+ size = length digits * 4 -- each hex is four bits
+ bits = concatMap hex2bits digits
 
+-- |
+-- prop> partial function
 hex2bits :: Char -> [Bool]
 hex2bits '0' = [False,False,False,False]
 hex2bits '1' = [False,False,False,True ]
@@ -55,17 +62,18 @@ hex2bits 'c' = hex2bits 'C'
 hex2bits 'd' = hex2bits 'D'
 hex2bits 'e' = hex2bits 'E'
 hex2bits 'f' = hex2bits 'F'
-hex2bits _   = undefined --TODO partial function
 
 newtype Hexadecimal = Hexadecimal String deriving (Show)
-
 -- | smart constructor for @Hexadecimal@
-hexadecimal :: String -> Hexadecimal
 hexadecimal = smart notHexadecimal Hexadecimal isHexadecimal
-
 notHexadecimal = show >>> ("hexadecimal: "++)
-
 isHexadecimal = all isHexDigit
+
+newtype Binary = Binary String deriving (Show)
+-- | smart constructor for @Binary@
+binary = smart notBinary Binary isBinary
+notBinary = show >>> ("binary: "++)
+isBinary = all (`elem` "01")
 
 -- | e.g. @showBits . toBits . readsHexadecimal@
 showBits = map (bool 0 1) >>> map show >>> intercalate ""

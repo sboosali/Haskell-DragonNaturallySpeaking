@@ -18,17 +18,28 @@ import Data.String
 import Data.Maybe
 
 
+-- |
+-- prop> monadic failure
+--
+-- <http://www.haskell.org/haskellwiki/Failure>
+readFail :: (Monad m, Read a) => String -> m a
+readFail = maybe (fail "read") return . readMay
+
 -- | makes a dynamic 'String' into a static 'Application', or a default dynamic 'Application'
 fromNSApplicationPath :: String -> Application
 fromNSApplicationPath path = maybe (ApplicationPath path) id (path2application path)
 
 -- | maybe dynamically 'read's a path to an 'Application'
-path2application :: String -> Maybe Application 
-path2application = fromString >>> basename >>> encodeString darwin >>> toConstructor >=> readMay
+--
+-- prop> monadic failure
+path2application :: (Monad m) => String -> m Application
+path2application = fromString >>> basename >>> encodeString darwin >>> (toConstructor >=> readFail)
 
 -- | may make a string into a valid Haskell constructor
-toConstructor :: String -> Maybe String
-toConstructor = dropUntil isAlpha >>> splitOn " " >>> map (filter isAlphaNum) >>> classCase >>> list Nothing Just
+--
+-- prop> monadic failure
+toConstructor :: (Monad m) => String -> m String
+toConstructor = filter isAscii >>> dropUntil isAlpha >>> splitOn " " >>> map (filter isAlphaNum) >>> classCase >>> list (fail "toConstructor") return
 
 -- | a Haskell constructor is a Haskell identifier that starts with an uppercase letter
 -- 
@@ -44,4 +55,5 @@ isConstructor (first:rest) = isUpper first && isIdentifier rest
 -- 
 isIdentifier :: String -> Bool
 isIdentifier = all ((||) <$> isAlphaNum <*> (`elem` "_'"))
+
 
