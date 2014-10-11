@@ -15,7 +15,7 @@ LDFLAGS    = $(PACKAGES) $(FRAMEWORKS)
 Haskell: install run
 
 install:
-	find . | grep '\.hi$' | grep commands # (debugging)
+	find . | grep \.hi$ | grep commands # (debugging)
 	cabal build # reinstalls commands package with "cabal install commands"
 
 run: Main
@@ -41,11 +41,11 @@ Main.o: Main.hs Events.o
 
 # # # # # # # # # # # # # # # # # # 
 
-Objective-C: events
-	./events
+Objective-C: main
+	./main
 
-events: events.m
-	gcc  events.m  -o ./events  -ObjC -framework Cocoa
+main: main.m actor.m
+	gcc -ObjC -framework Cocoa  -o ./main  $^
 
 
 # # # # # # # # # # # # # # # # # # 
@@ -53,12 +53,11 @@ events: events.m
 default: Haskell
 
 clean:
-	rm -fr dist
 	rm -f *.o *.hi *_objc.[hm] Main
-	rm -f events
+	rm -f main
 
-fresh:
-	rm -f *.o *.hi *_objc.[hm] Main
+fresh: clean
+	rm -fr dist
 
 .PHONY: default clean fresh install Haskell Objective-C
 

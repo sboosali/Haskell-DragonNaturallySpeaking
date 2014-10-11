@@ -1,27 +1,12 @@
-#include <Cocoa/Cocoa.h>
+#import <Cocoa/Cocoa.h>
 #import <Carbon/Carbon.h>
+#import "actor.h"
 
 
-NSString currentApplicationPath()
-{
-  return [[[NSWorkspace sharedWorkspace] activeApplication] objectForKey:@"NSApplicationPath"];
-}
-
-ProcessSerialNumber currentApplication()
-{
+ProcessSerialNumber currentApplication() {
   NSDictionary *appInfo = [[NSWorkspace sharedWorkspace] activeApplication];
 
-  // need the Carbon PSN
-  ProcessSerialNumber psn;
-  psn.highLongOfPSN = [[appInfo objectForKey:@"NSApplicationProcessSerialNumberHigh"] unsignedIntValue];
-  psn.lowLongOfPSN  = [[appInfo objectForKey:@"NSApplicationProcessSerialNumberLow"]  unsignedIntValue];
-
-  return psn;
-}
-
-/*
-
-  // NSLog(@"%@", appInfo);
+/* // NSLog(@"%@", appInfo);
 
   NSDictionary: {
   NSApplicationBundleIdentifier = "org.gnu.Emacs";
@@ -32,29 +17,18 @@ ProcessSerialNumber currentApplication()
   NSApplicationProcessSerialNumberLow = 4195328;
   NSWorkspaceApplicationKey = "<NSRunningApplication: 0x7fe3c0e08b30 (org.gnu.Emacs - 40831)>";
   }
-
 */
 
-void pressKey(CGKeyCode key, CGEventFlags flags)
-{
-    // events to press a key
-    CGEventRef event1 = CGEventCreateKeyboardEvent(NULL, key, true); // key down
-    CGEventRef event2 = CGEventCreateKeyboardEvent(NULL, key, false); // key up
+  // need the Carbon PSN
+  ProcessSerialNumber psn;
+  psn.highLongOfPSN = [[appInfo objectForKey:@"NSApplicationProcessSerialNumberHigh"] unsignedIntValue];
+  psn.lowLongOfPSN  = [[appInfo objectForKey:@"NSApplicationProcessSerialNumberLow"]  unsignedIntValue];
 
-    // add modifiers ('command-shift-key') to event
-    CGEventSetFlags(event1, flags);
-    CGEventSetFlags(event2, flags);
-
-    ProcessSerialNumber psn = currentApplication();
-
-    // send keyboard event to application process (a quartz event)
-    CGEventPostToPSN(&psn, event1);
-    CGEventPostToPSN(&psn, event2);
-
+  return psn;
 }
 
-CGPoint currentMousePosition()
-{
+CGPoint currentMousePosition()  {
+
   CGEventRef event = CGEventCreate(NULL);
   CGPoint point = CGEventGetLocation(event);
   // NSLog(@"x= %f, y = %f", (float)mousePosition.x, (float)mousePosition.y);
@@ -62,8 +36,30 @@ CGPoint currentMousePosition()
   return point;
 }
 
-void clickMouse(CGEventType mouseDown, CGEventType mouseUp, CGMouseButton mouseButton, UInt32 clickCount, CGEventFlags flags)
-{
+
+@implementation Actor
+
++(NSString*) currentApplicationPath {
+  return [[[NSWorkspace sharedWorkspace] activeApplication] objectForKey:@"NSApplicationPath"];
+}
+
++(void) pressKey:(CGKeyCode)key withModifiers:(CGEventFlags)modifiers {
+    // events to press a key
+    CGEventRef event1 = CGEventCreateKeyboardEvent(NULL, key, true); // key down
+    CGEventRef event2 = CGEventCreateKeyboardEvent(NULL, key, false); // key up
+
+    // add modifiers ('command-shift-key') to event
+    CGEventSetFlags(event1, modifiers);
+    CGEventSetFlags(event2, modifiers);
+
+    ProcessSerialNumber psn = currentApplication();
+
+    // send keyboard event to application process (a quartz event)
+    CGEventPostToPSN(&psn, event1);
+    CGEventPostToPSN(&psn, event2);
+}
+
++(void) clickMouse:(CGEventType)mouseDown and:(CGEventType)mouseUp on:(CGMouseButton)mouseButton for:(UInt32)clickCount with:(CGEventFlags)modifiers {
 
   CGPoint mousePosition = currentMousePosition();
 
@@ -75,8 +71,8 @@ void clickMouse(CGEventType mouseDown, CGEventType mouseUp, CGMouseButton mouseB
   CGEventSetType(event2, mouseUp);
 
   // hold down modifier key while clicking
-  CGEventSetFlags(event1, command);
-  CGEventSetFlags(event2, command);
+  CGEventSetFlags(event1, modifiers);
+  CGEventSetFlags(event2, modifiers);
 
   // for double-click
   // flaky: maybe better to repeat `CGEventPost`
@@ -86,21 +82,6 @@ void clickMouse(CGEventType mouseDown, CGEventType mouseUp, CGMouseButton mouseB
   // kCGHIDEventTap "specifies that an event tap is placed at the point where HID system events enter the window server."
   CGEventPost(kCGHIDEventTap, event1);
   CGEventPost(kCGHIDEventTap, event2);
-
 }
 
-
-int main(int argc, char** argv)
-{
-  // Automatic Reference Counting (ARC)
-  @autoreleasepool {
-
-  // double-click the mouse while holding command, at current location
-  clickMouse(kCGEventLeftMouseDown, kCGEventLeftMouseUp, kCGMouseButtonLeft, 2, kCGEventFlagMaskCommand);
-
-  // type command-shift-n, into current application
-  pressKey(kVK_ANSI_N, kCGEventFlagMaskCommand | kCGEventFlagMaskShift);
-  }
-
-  return 0;
-}
+@end
