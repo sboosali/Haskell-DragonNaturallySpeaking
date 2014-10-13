@@ -27,7 +27,7 @@ readFail = maybe (fail "read") return . readMay
 
 -- | makes a dynamic 'String' into a static 'Application', or a default dynamic 'Application'
 fromNSApplicationPath :: String -> Application
-fromNSApplicationPath path = maybe (ApplicationPath path) id (path2application path)
+fromNSApplicationPath path = fromMaybe (ApplicationPath path) (path2application path)
 
 -- | maybe dynamically 'read's a path to an 'Application'
 --

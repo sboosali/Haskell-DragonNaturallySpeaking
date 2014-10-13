@@ -21,7 +21,7 @@ readsBitVector ('0':'b':digits) = fromJust $ readsBinary digits
 readsBinary :: String -> Maybe BitVector
 readsBinary (binary -> Just (Binary digits)) = do
  let size = length digits
- bits <- sequence $ map bin2bit digits
+ bits <- mapM bin2bit digits
  return $ bitVec size (fromBits bits)
 readsBinary _ = failed
 
