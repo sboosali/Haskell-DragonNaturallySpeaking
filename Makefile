@@ -52,6 +52,12 @@ main: main.m actor.m
 
 default: Haskell
 
+all:
+	cabal build
+	cabal test
+	cabal haddock
+	hlint .
+
 clean:
 	rm -f *.o *.hi *_objc.[hm] Main
 	rm -f main
@@ -59,7 +65,7 @@ clean:
 fresh: clean
 	rm -fr dist
 
-.PHONY: default clean fresh install Haskell Objective-C
+.PHONY: default all clean fresh install Haskell Objective-C
 
 # # # # # # # # # # # # # # # # # # 
 
