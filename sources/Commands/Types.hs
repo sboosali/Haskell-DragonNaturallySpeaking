@@ -7,33 +7,111 @@ import Data.Maybe
 
 
 -- | the core type sent to @'press'@
-data KeyPress = Press Key [Modifier]
+data KeyPress = Press [Modifier] Key
  deriving (Show)
 
 -- | modifier keys can be "held"
 data Modifier = Command | Control | Shift | Option | Function
  deriving (Show)
 
--- | a @Char@ can be any Unicode character
-data Key = Key Char | FunKey Integer | ModKey Modifier
+-- | all the keys of a standard keyboard
+data Key
 
- | EscapeKey             -- ^ modifies characters (isn't a character). escape is "pressed", not "held", thus it's not a @Modifier@. (maybe this is why you can't hold @esc-b@ in the terminal?)
+ = CommandKey
+ | ControlKey
+ | CapsLockKey
+ | ShiftKey
+ | OptionKey
+ | FunctionKey
 
- | CapslockKey           -- ^ modifies characters (isn't a character)
+ | EscapeKey
+ | GraveKey
+ | MinusKey
+ | EqualKey
+ | DeleteKey
+ | ForwardDeleteKey
+ | LeftBracketKey
+ | RightBracketKey
+ | BackslashKey
+ | SemicolonKey
+ | QuoteKey
+ | CommaKey
+ | PeriodKey
+ | SlashKey
 
- | DeleteKey Direction1D -- ^ deletes characters (isn't a character)
+ | TabKey
+ | SpaceKey
+ | ReturnKey
 
- | ArrowKey Direction2D  -- ^ navigates characters (isn't a character)
+ | LeftArrowKey
+ | RightArrowKey
+ | DownArrowKey
+ | UpArrowKey
 
- deriving (Show)
+ | AKey
+ | BKey
+ | CKey
+ | DKey
+ | EKey
+ | FKey
+ | GKey
+ | HKey
+ | IKey
+ | JKey
+ | KKey
+ | LKey
+ | MKey
+ | NKey
+ | OKey
+ | PKey
+ | QKey
+ | RKey
+ | SKey
+ | TKey
+ | UKey
+ | VKey
+ | WKey
+ | XKey
+ | YKey
+ | ZKey
 
-data Direction1D = Forwards | Backwards deriving (Show)
+ | ZeroKey
+ | OneKey
+ | TwoKey
+ | ThreeKey
+ | FourKey
+ | FiveKey
+ | SixKey
+ | SevenKey
+ | EightKey
+ | NineKey
 
-data Direction2D = Up | Down | Left | Right deriving (Show)
+ | F1Key
+ | F2Key
+ | F3Key
+ | F4Key
+ | F5Key
+ | F6Key
+ | F7Key
+ | F8Key
+ | F9Key
+ | F10Key
+ | F11Key
+ | F12Key
+ | F13Key
+ | F14Key
+ | F15Key
+ | F16Key
+ | F17Key
+ | F18Key
+ | F19Key
+ | F20Key
+
+ deriving (Show, Enum)
 
 
 -- | the core type sent to @'click'@
-data MouseClick = Click MouseButton [Modifier] Positive
+data MouseClick = Click [Modifier] MouseButton Positive
  deriving (Show)
 
 data MouseButton = LeftButton | MiddleButton | RightButton
@@ -43,7 +121,7 @@ data MouseButton = LeftButton | MiddleButton | RightButton
 newtype Positive = Positive Integer deriving (Show)
 -- | smart constructor for @positive@
 positive :: (Monad m) => Integer -> m Positive
-positive = smart (("smart: " ++) . show) Positive (>= 1) 
+positive = smart (("smart: " ++) . show) Positive (>= 1)
 positive' = fromJust . positive
 
 data Application

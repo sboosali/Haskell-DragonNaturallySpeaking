@@ -1,8 +1,8 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes, DeriveDataTypeable, ViewPatterns #-}
 module Events where
+import Commands
 import Commands.Types
-import Commands.OSX.Types
-import Commands.OSX.Constants
+import Commands.OSX.Marshall
 
 import Data.BitVector
 import Foreign.C.Types
@@ -21,10 +21,9 @@ currentApplicationPathO = $(objc [] $ [t|String|] <: [cexp|
  [[[NSWorkspace sharedWorkspace] activeApplication] objectForKey:@"NSApplicationPath"]
 |])
 
--- | (KeyPress (code -> char) (encode -> flags)) 
-pressO :: [Modifier] -> VirtualKey -> IO ()
-pressO (mask -> flags) (code -> key) = $(objc ['flags :> [t|CULLong|], 'key :> [t|CUShort|]] $ void [cexp|
- NSLog(@"%qu %hu", flags, key)
+pressO :: KeyPress -> IO ()
+pressO (Press (encodeModifiers -> flags) (encodeKey -> key)) = $(objc ['flags :> [t|CULLong|], 'key :> [t|CUShort|]] $ void [cexp|
+  NSLog(@"%qu %hu", flags, key)
 |])
 
 objc_emit
@@ -33,4 +32,4 @@ objc_emit
 main =  do
  objc_initialise
  currentApplicationPathO >>= print 
- pressO [Command, Shift] KKey
+ pressO $ touch 'K'
