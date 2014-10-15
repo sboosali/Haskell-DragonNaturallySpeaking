@@ -72,8 +72,18 @@ library
 
   -- modules exported by the library
   exposed-modules:
-   Commands, Commands.Types, Commands.Bits, Commands.Instances, Commands.Munging,
-   Commands.OSX.Constants, Commands.OSX.Types, Commands.OSX.Bridge, Commands.OSX.Marshall
+   Commands,
+
+   Commands.Types,
+   Commands.Bits,
+   Commands.Instances,
+   Commands.Munging,
+   Commands.Parsers,
+
+   Commands.OSX.Constants,
+   Commands.OSX.Types,
+   Commands.OSX.Bridge,
+   Commands.OSX.Marshall
 
   -- modules included in this library, but not exported
   other-modules: Commands.Etc
@@ -95,7 +105,11 @@ library
    parsec ==3.1.*,
    data-default,
    bv,
+
+   language-c-quote,
    language-c-inline,
+
+   template-haskell,
    base ==4.7.*
 
 test-suite tests
