@@ -7,7 +7,7 @@ CFLAGS     = -fobjc-arc -I$(LIBDIR)/include -I$(LIBDIR)/../../includes
 HCFLAGS    = -v 
 PACKAGES   = -package template-haskell -package language-c-quote -package language-c-inline -package bv -package commands
 FRAMEWORKS = -framework Carbon -framework Cocoa -framework Foundation
-LDFLAGS    = $(PACKAGES) $(FRAMEWORKS)
+LDFLAGS    = -optl-ObjC $(PACKAGES) $(FRAMEWORKS)
 
 # # # # # # # # # # # # # # # # # # 
 

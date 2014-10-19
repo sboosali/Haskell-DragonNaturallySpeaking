@@ -3,8 +3,7 @@
 #import "actor.h"
 
 
-ProcessSerialNumber currentApplication() {
-  NSDictionary *appInfo = [[NSWorkspace sharedWorkspace] activeApplication];
+@implementation Actor
 
 /* // NSLog(@"%@", appInfo);
 
@@ -19,26 +18,6 @@ ProcessSerialNumber currentApplication() {
   }
 */
 
-  // need the Carbon PSN
-  ProcessSerialNumber psn;
-  psn.highLongOfPSN = [[appInfo objectForKey:@"NSApplicationProcessSerialNumberHigh"] unsignedIntValue];
-  psn.lowLongOfPSN  = [[appInfo objectForKey:@"NSApplicationProcessSerialNumberLow"]  unsignedIntValue];
-
-  return psn;
-}
-
-CGPoint currentMousePosition()  {
-
-  CGEventRef event = CGEventCreate(NULL);
-  CGPoint point = CGEventGetLocation(event);
-  // NSLog(@"x= %f, y = %f", (float)mousePosition.x, (float)mousePosition.y);
-
-  return point;
-}
-
-
-@implementation Actor
-
 +(NSString*) currentApplicationPath {
   return [[[NSWorkspace sharedWorkspace] activeApplication] objectForKey:@"NSApplicationPath"];
 }
@@ -52,7 +31,11 @@ CGPoint currentMousePosition()  {
     CGEventSetFlags(event1, modifiers);
     CGEventSetFlags(event2, modifiers);
 
-    ProcessSerialNumber psn = currentApplication();
+    // current application
+    NSDictionary *appInfo = [[NSWorkspace sharedWorkspace] activeApplication];
+    ProcessSerialNumber psn;
+    psn.highLongOfPSN = [[appInfo objectForKey:@"NSApplicationProcessSerialNumberHigh"] unsignedIntValue];
+    psn.lowLongOfPSN  = [[appInfo objectForKey:@"NSApplicationProcessSerialNumberLow"]  unsignedIntValue];
 
     // send keyboard event to application process (a quartz event)
     CGEventPostToPSN(&psn, event1);
@@ -61,7 +44,9 @@ CGPoint currentMousePosition()  {
 
 +(void) clickMouse:(CGEventType)mouseDown and:(CGEventType)mouseUp on:(CGMouseButton)mouseButton for:(UInt32)clickCount with:(CGEventFlags)modifiers {
 
-  CGPoint mousePosition = currentMousePosition();
+  // current mouse position
+  CGPoint mousePosition = CGEventGetLocation(CGEventCreate(NULL));
+  // NSLog(@"x= %f, y = %f", (float)mousePosition.x, (float)mousePosition.y);
 
   CGEventRef event1 = CGEventCreateMouseEvent(NULL, mouseDown, mousePosition, mouseButton);
   CGEventRef event2 = CGEventCreateMouseEvent(NULL, mouseUp,   mousePosition, mouseButton);
