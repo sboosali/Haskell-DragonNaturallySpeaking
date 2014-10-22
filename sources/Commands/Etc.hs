@@ -1,4 +1,7 @@
+{-# LANGUAGE Rank2Types #-}
 module Commands.Etc where
+
+import Safe
 
 
 -- | transform from @Bool@, like @maybe@ or @either@
@@ -35,4 +38,14 @@ list _     f xs = f xs
 
 failed :: (Monad m) => m a
 failed = fail ""
+
+-- |
+-- prop> monadic failure
+--
+-- <http://www.haskell.org/haskellwiki/Failure>
+readFail :: (Monad m, Read a) => String -> m a
+readFail = maybe (fail "read") return . readMay
+
+-- |
+type Possibly a = (Monad m) => m a
 

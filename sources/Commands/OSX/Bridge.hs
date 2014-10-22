@@ -1,3 +1,4 @@
+{-# LANGUAGE Rank2Types #-}
 module Commands.OSX.Bridge where
 import Commands.Etc
 import Commands.Types
@@ -18,27 +19,20 @@ import Data.String
 import Data.Maybe
 
 
--- |
--- prop> monadic failure
---
--- <http://www.haskell.org/haskellwiki/Failure>
-readFail :: (Monad m, Read a) => String -> m a
-readFail = maybe (fail "read") return . readMay
-
 -- | makes a dynamic 'String' into a static 'Application', or a default dynamic 'Application'
 fromNSApplicationPath :: String -> Application
 fromNSApplicationPath path = fromMaybe (ApplicationPath path) (path2application path)
 
--- | maybe dynamically 'read's a path to an 'Application'
+-- | maybe-dynamically 'read's a path to an 'Application'
 --
 -- prop> monadic failure
-path2application :: (Monad m) => String -> m Application
+path2application :: String -> Possibly Application
 path2application = fromString >>> basename >>> encodeString darwin >>> (toConstructor >=> readFail)
 
 -- | may make a string into a valid Haskell constructor
 --
 -- prop> monadic failure
-toConstructor :: (Monad m) => String -> m String
+toConstructor :: String -> Possibly String
 toConstructor = filter isAscii >>> dropUntil isAlpha >>> splitOn " " >>> map (filter isAlphaNum) >>> classCase >>> list (fail "toConstructor") return
 
 -- | a Haskell constructor is a Haskell identifier that starts with an uppercase letter

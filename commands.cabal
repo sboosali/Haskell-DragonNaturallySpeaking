@@ -72,8 +72,8 @@ library
 
   -- modules exported by the library
   exposed-modules:
-   Commands,
 
+   Commands.Etc,
    Commands.Types,
    Commands.Bits,
    Commands.Instances,
@@ -81,12 +81,13 @@ library
    Commands.Parsers,
 
    Commands.OSX.Constants,
-   Commands.OSX.Types,
    Commands.OSX.Bridge,
-   Commands.OSX.Marshall
+   Commands.OSX.Marshall,
+
+   Commands
 
   -- modules included in this library, but not exported
-  other-modules: Commands.Etc
+  other-modules:
 
   -- LANGUAGE extensions used by modules in this package
   -- other-extensions:

@@ -1,18 +1,24 @@
+{-# LANGUAGE Rank2Types #-}
 module Commands.Types where
 import Commands.Etc
-
-import Data.Default
 
 import Data.Maybe
 
 
 -- | the core type sent to @'press'@
+--
+-- @Press [Command, Shift] AKey@ is easy to read
+--
+-- @Press []@ is natural to partially apply
+--
 data KeyPress = Press [Modifier] Key
  deriving (Show)
 
 -- | modifier keys can be "held"
+--
+-- escape is pressed, not "held"
 data Modifier = Command | Control | Shift | Option | Function
- deriving (Show)
+ deriving (Show, Enum)
 
 -- | all the keys of a standard keyboard
 data Key
@@ -115,13 +121,15 @@ data MouseClick = Click [Modifier] MouseButton Positive
  deriving (Show)
 
 data MouseButton = LeftButton | MiddleButton | RightButton
- deriving (Show)
+ deriving (Show, Enum)
 
 -- | refinement
 newtype Positive = Positive Integer deriving (Show)
 -- | smart constructor for @positive@
-positive :: (Monad m) => Integer -> m Positive
-positive = smart (("smart: " ++) . show) Positive (>= 1)
+positive :: Integer -> Possibly Positive
+positive = smart (("positive: " ++) . show) Positive (>= 1)
+-- | prop> partial function
+positive' :: Integer -> Positive
 positive' = fromJust . positive
 
 data Application
