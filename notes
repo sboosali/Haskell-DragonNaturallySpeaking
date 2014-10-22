@@ -1,0 +1,10 @@
+-  -  -  -  -  -  -  -
+SuperGoals
+
+encode  :: Grammar -> [Rule] -> String
+
+compile :: Context -> Rule -> [Action]
+execute :: Actor -> Action -> IO ()
+
+easy to add: Rule, Context, Action,
+
