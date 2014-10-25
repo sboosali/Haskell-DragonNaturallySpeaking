@@ -1,10 +1,54 @@
 -  -  -  -  -  -  -  -
 SuperGoals
 
-encode  :: Grammar -> [Rule] -> String
+for (library) users, easy to add: Rule, Context, Action,
 
+for (library) authors, easy to add: Grammar, Request, Actor
+
+
+-  -  -  -  -  -  -  -
+Functions
+
+encode  :: Grammar -> [Rule] -> String
+parse   :: Request -> Rule
+current :: IO Context
 compile :: Context -> Rule -> [Action]
 execute :: Actor -> Action -> IO ()
 
-easy to add: Rule, Context, Action,
 
+-  -  -  -  -  -  -  -
+Types
+
+Action >
+ NoAction (default)
+ KeyPress
+ MouseClick
+ Wait
+ HTTPAction
+ IOAction
+ Actions [Action]
+
+Context >
+ (overlapping)
+ (partially-ordered)
+ Global (default)
+ Emacs
+ IntelliJ
+ Haskell
+ Java
+ Python
+ Google Chrome
+ Gmail
+ Outlook
+ Terminal
+
+Rule >
+ (thousands)
+ (class?)
+
+
+-  -  -  -  -  -  -  -
+Examples
+
+
+-  -  -  -  -  -  -  -
