@@ -1,42 +1,33 @@
 module Commands.Parsers where
 
-import Filesystem.Path.CurrentOS
-import Filesystem.Path
 import Text.Parsec
 
 import Prelude hiding (until)
+import Control.Applicative ((<$>), (<*>), (<*), (*>))
 
 
 parseObjC :: String -> Either ParseError ([String], String)
 parseObjC = parse objcFile ""
 
 -- | extracts the imports and the implementation/interface code from a simple ".m" or ".h" file
-objcFile = do
- inclusions <- many inclusion
- spaces
- body' <- body
- return (inclusions, body')
+objcFile = (,) <$> (many inclusion <* spaces) <*> body
 
 -- | crude parser: fails against whitespace
 inclusion
- =   (everythingBetweenExclusively (string "#import ")  (char '\n'))
- <|> (everythingBetweenExclusively (string "#include ") (char '\n'))
+ =   (try $ everythingBetweenExclusively (string "#import ")  (char '\n'))
+ <|> (try $ everythingBetweenExclusively (string "#include ") (char '\n'))
 
 -- | crude parser: fails against comments and strings
 body
- =   (everythingBetweenInclusively (string "@implementation") (string "@end"))
- <|> (everythingBetweenInclusively (string "@interface")      (string "@end"))
+ =   (try $ everythingBetweenInclusively (string "@implementation") (string "@end"))
+ <|> (try $ everythingBetweenInclusively (string "@interface")      (string "@end"))
 
-everythingBetweenExclusively open close = try $ between open close (until close) 
-
-everythingBetweenInclusively open close = try $ betweenInclusively open close (until close) 
+everythingBetweenExclusively open close = between            open close (until close) 
+everythingBetweenInclusively open close = betweenInclusively open close (until close) 
 
 -- | 'between' is exclusive
-betweenInclusively open close parser = do
- x <- open
- y <- parser
- z <- close
- return $ x ++ y ++ z
+betweenInclusively open close parser = (+++) <$> open <*> parser <*> close
+ where (+++) x y z = x ++ y ++ z
 
 -- | 
 --
@@ -45,3 +36,6 @@ betweenInclusively open close parser = do
 -- 'lookAhead' doesn't consume on success and errors on failure
 until parser = anyChar `manyTill` ((try . lookAhead) parser)
 
+-- $ cabal exec runhaskell sources/Commands/Parsers.hs
+main = do
+ parseObjC <$> readFile "actor.m" >>= print
