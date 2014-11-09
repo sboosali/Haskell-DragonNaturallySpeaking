@@ -15,7 +15,8 @@ data Command
  | X__click (Maybe Times) (Maybe Button)
  deriving (Show)
 
-data Phrase = Dictation [Word] | Join Joiner Phrase | Xlit_ Word -- | Xquote_unquote [Word]
+-- | Xquote_unquote [Word]
+data Phrase = Dictation [Word] | Join Joiner Phrase | Xlit_ Word
  deriving (Show)
 data Joiner = Camel | Snake
  deriving (Show)
