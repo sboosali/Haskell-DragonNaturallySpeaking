@@ -5,12 +5,14 @@ import Data.Tuple.Utils
 import Data.List.Utils hiding (split)
 import Data.List.Split
 import Data.List
-import Data.Ord
 import Data.Function
+import Data.Data.Lens
+import Data.Maybe
 
 import Language.Haskell.TH
 import Control.Arrow
 import Control.Applicative
+import Control.Lens
 
 
 data Syntax = Part String | Hole Type | PartHoles String [Syntax]
@@ -19,20 +21,18 @@ data Syntax = Part String | Hole Type | PartHoles String [Syntax]
 data Constructor = Constructor String [Type]
  deriving (Show)
 
-constructors :: Info -> [Con]
-constructors (TyConI (DataD    _ _ _ cs _)) = cs
-constructors (TyConI (NewtypeD _ _ _ c  _)) = [c]
-
-constructorType :: Con -> [Type]
-constructorType (NormalC name (map snd -> types)) = types
-constructorType (RecC name (map thd3 -> types)) = types
-
-constructorName :: Con -> String
-constructorName (NormalC name _) = nameBase name
-constructorName (RecC name _) = nameBase name
-
+-- | given a reified declaration (should be @data@), takes the constructors, and makes the grammar
 syntaxT :: Info -> [[Syntax]]
 syntaxT = map (parseC . fromCon) . constructors
+
+constructors :: Info -> [Con]
+constructors = toListOf biplate
+
+constructorType :: Con -> [Type]
+constructorType = toListOf biplate
+
+constructorName :: Con -> String
+constructorName = maybe "" nameBase . firstOf biplate
 
 fromCon :: Con -> Constructor
 fromCon constructor = Constructor (constructorName constructor) (constructorType constructor)
@@ -45,29 +45,42 @@ parseC (Constructor _          types) = parseRaw         types
 -- |
 -- @instance Arrow (->)@ lets me think about e.g. @[(Index,Thing)]@ as:
 -- a list of @Thing@ data with @Index@ metadata.
--- assert $ length typeHoles == length nameHoles
+--
+-- prop> length typeHoles == length nameHoles
+--
+-- e.g. constructor: @Xreplace_with_ Phrase Phrase@
 parseMixFix :: String -> [Type] -> [Syntax]
 parseMixFix name types = map snd syntax
  where
- syntax = mergeBy (compare `on` fst) parts holes     -- ^ we merge on the Indices…
- parts = map (second Part) nameParts                 -- ^ after mapping over some Things…
- holes = map (second Hole) $ swpSnds types nameHoles -- ^ and swapping Things.
+ syntax = mergeBy (compare `on` fst) parts holes     -- ^ we merge by the "Indices"…
+ parts = map (second Part)                 nameParts -- ^ after munging the "Things".
+ holes = map (second Hole) $ swpSnds types nameHoles
  (nameHoles, nameParts) = parseMixFixName name
 
+-- | split by "_", index each token, separate the separators
+--
+-- >>> parseMixFixName "replace_with_"
+-- ([(1,"_"),(3,"_")], [(0,"replace"),(2,"with")])
+--
 parseMixFixName :: String ->  ([(Integer,String)], [(Integer,String)])
 parseMixFixName name = partition (snd . second (=="_")) $ zip [0..] $ split (dropBlanks $ oneOf "_") name
  where dropBlanks = dropInitBlank . dropInnerBlanks . dropFinalBlank
 
--- | prop> length cs == length abs
+-- | prop> arguments should share same length
 swpSnds :: [c] -> [(a,b)] -> [(a,c)]
-swpSnds cs abs = (unzip >>> second (const cs) >>> rezip) abs
+swpSnds cs = unzip >>> second (const cs) >>> rezip
 
 -- | prop> rezip . unzip === id
+rezip :: ([a], [b]) -> [(a, b)]
 rezip = uncurry zip
 
+-- | 
+-- e.g. constructor: @Undo@
 parseU1 :: String -> [Syntax]
 parseU1 = (:[]) <$> Part
 
+-- | 
+-- e.g. constructor: @Repeat Command@
 parseRaw :: [Type] -> [Syntax]
 parseRaw = map Hole
 

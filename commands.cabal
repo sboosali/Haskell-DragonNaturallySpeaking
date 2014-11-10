@@ -80,6 +80,7 @@ library
    Commands.Munging,
    Commands.Parsers,
    Commands.Generic,
+   Commands.Syntax,
 
    Commands.OSX.Constants,
    Commands.OSX.Bridge,
@@ -111,6 +112,8 @@ library
    generic-deriving,
    MissingH,
    transformers,
+   uniplate,
+   lens,
 
    language-c-quote,
    language-c-inline,
