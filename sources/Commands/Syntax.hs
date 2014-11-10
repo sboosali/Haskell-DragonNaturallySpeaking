@@ -84,11 +84,3 @@ parseU1 = (:[]) <$> Part
 parseRaw :: [Type] -> [Syntax]
 parseRaw = map Hole
 
-
-type Phrase = String
-data Command
- = Xreplace_with_ Phrase Phrase -- ^ by 'parseMixFix'
- | Undo                         -- ^ by 'parseU1'
- | Repeat Command               -- ^ by 'parseRaw'
- deriving (Show)
-

@@ -86,13 +86,13 @@ library
    Commands.OSX.Bridge,
    Commands.OSX.Marshall,
 
+   Example.Types,
+   Example.Commands,
+
    Commands
 
   -- modules included in this library, but not exported
   other-modules:
-
-  -- LANGUAGE extensions used by modules in this package
-  -- other-extensions:
 
   -- base language which the package is written in
   default-language: Haskell2010
