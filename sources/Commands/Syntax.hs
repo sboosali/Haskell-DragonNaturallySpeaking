@@ -1,13 +1,11 @@
-{-# LANGUAGE ViewPatterns, TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell #-}
 module Commands.Syntax where
 
-import Data.Tuple.Utils
 import Data.List.Utils hiding (split)
 import Data.List.Split
 import Data.List
 import Data.Function
 import Data.Data.Lens
-import Data.Maybe
 
 import Language.Haskell.TH
 import Control.Arrow
@@ -52,8 +50,10 @@ parseC (Constructor _          types) = parseRaw         types
 parseMixFix :: String -> [Type] -> [Syntax]
 parseMixFix name types = map snd syntax
  where
- syntax = mergeBy (compare `on` fst) parts holes     -- ^ we merge by the "Indices"…
- parts = map (second Part)                 nameParts -- ^ after munging the "Things".
+ -- we merge by the "Indices"…
+ syntax = mergeBy (compare `on` fst) parts holes
+ -- after munging the "Things". 
+ parts = map (second Part)                 nameParts
  holes = map (second Hole) $ swpSnds types nameHoles
  (nameHoles, nameParts) = parseMixFixName name
 
@@ -63,8 +63,8 @@ parseMixFix name types = map snd syntax
 -- ([(1,"_"),(3,"_")], [(0,"replace"),(2,"with")])
 --
 parseMixFixName :: String ->  ([(Integer,String)], [(Integer,String)])
-parseMixFixName name = partition (snd . second (=="_")) $ zip [0..] $ split (dropBlanks $ oneOf "_") name
- where dropBlanks = dropInitBlank . dropInnerBlanks . dropFinalBlank
+parseMixFixName name = partition (snd . second (=="_")) $ zip [0..] $ split (droppingBlanks $ oneOf "_") name
+ where droppingBlanks = dropInitBlank . dropInnerBlanks . dropFinalBlank
 
 -- | prop> arguments should share same length
 swpSnds :: [c] -> [(a,b)] -> [(a,c)]
@@ -83,4 +83,14 @@ parseU1 = (:[]) <$> Part
 -- e.g. constructor: @Repeat Command@
 parseRaw :: [Type] -> [Syntax]
 parseRaw = map Hole
+
+-- | 
+--
+-- >>> chunkUntil (/='_') "_a_b" :: [String]
+-- ["_a","_b"]
+--
+-- >>> chunkUntil (/='_') "a__bc" :: [String]
+-- ["a","__b","c"]
+chunkUntil :: (a -> Bool) -> [a] -> [[a]]
+chunkUntil p = split (dropFinalBlank $ keepDelimsR $ whenElt p)
 

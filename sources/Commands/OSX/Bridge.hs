@@ -5,13 +5,12 @@ import Commands.Types
 import Commands.Munging
 
 import Data.List.Split (splitOn) 
-import Safe
 import Filesystem.Path.CurrentOS()
 import Filesystem.Path
 import Filesystem.Path.Rules
 
 import Prelude hiding (FilePath)
-import Control.Arrow
+import Control.Arrow ((>>>))
 import Control.Applicative
 import Control.Monad
 import Data.Char

@@ -25,14 +25,21 @@ smart :: (Monad m) => (a -> String) -> (a -> b) -> (a -> Bool) -> a -> m b
 smart messenger constructor predicate input = bool (fail $ messenger input) (return $ constructor input) (predicate input)
 
 -- | like 'dropWhile', negated, but keeps the first satisfying element
+dropUntil :: (t -> Bool) -> [t] -> [t]
 dropUntil _ []     = []
 dropUntil p (x:xs)
  | p x       = x:xs
  | otherwise = dropUntil p xs
 
+either2maybe :: Either a b -> Maybe b
 either2maybe = either (const Nothing) Just
 
 -- | transform from @[a]@, like @maybe@ or @either@
+--
+-- can do @list x head xs@
+--
+-- almost @fold@
+list :: b -> ([a] -> b) -> [a] -> b
 list empty _ [] = empty
 list _     f xs = f xs
 

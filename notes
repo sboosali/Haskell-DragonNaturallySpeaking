@@ -50,5 +50,33 @@ Rule >
 -  -  -  -  -  -  -  -
 Examples
 
+data Command
+ = Xreplace_with_ Phrase Phrase
+ | Repeat Natural Command -- like "X__" but unique and named
+ | X__click (Maybe Times) (Maybe Button)
+ | Qdirections'to_from_via_arrivingBy_ (Maybe Location) (Maybe Location) (Maybe Transportation) (Maybe Date)
+data Phrase = X_case_ Joiner Phrase | Dictation [Word]
+data Joiner = Camel | Class | Snake | Dash | …;
+
+<Command> exported
+ = replace <Phrase> with <Phrase>
+ | [<Times>] [<Button>] click
+ | <Natural> <Command>;
+<Phrase> = <Joiner> case <Phrase> | <dgndictation>; -- Dragon preserves order?
+<Joiner> = camel | class | snake | dash | ...;
+<Times> = single | double | triple | ...;
+<Button> = ...;
+<Natural> = one | two | three | ...;
+
+"replace snake case some phrase with camel case some phrase"
+"replace X with Y with Y with X"
+
+"click"
+"double click"
+"right click"
+"double right click"
+
+"three kill whole line"
+
 
 -  -  -  -  -  -  -  -

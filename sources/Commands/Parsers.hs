@@ -98,8 +98,8 @@ parseConstructor ('X':name) = either (fail . show) (return . MixFixConstructor) 
 -- this is a really long sentence to trigger a mind that after 80 characters okay more characters we need more characters why isn't it wrapping I don't know
 
 parseMixFix :: Parser [MixFixSyntax]
-parseMixFix = many1 $
-     ((Part . parsed unCamelCase) <$> (many1 $ noneOf "_")
+parseMixFix = many1
+     ((Part . parsed unCamelCase) <$> many1 (noneOf "_")
  <|> (Hole <$ char '_'))
 
 unCamelCase :: Parser [String] 
@@ -119,7 +119,7 @@ parsed p = either (const def) id . runParser p () ""
 -- and the parser should include the other parser, not call it
 
 parsing :: Parser o -> String -> Either ParseError o
-parsing p s = runParser p () "" s
+parsing p = runParser p () ""
 
 
 -- $ cabal exec runhaskell sources/Commands/Parsers.hs

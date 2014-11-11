@@ -13,9 +13,10 @@ import Test.QuickCheck
 import Test.HUnit
 
 import Data.BitVector
+import Data.Char
 
 
-hexadecimalHasRightSize digits = isHexadecimal digits ==>
+hexadecimalHasRightSize digits = all isHexDigit digits ==>
  size (read $ "0x" ++ digits) `mod` 4 == 0
 
 validConstructors = maybe True isConstructor . toConstructor

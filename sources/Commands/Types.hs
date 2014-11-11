@@ -129,8 +129,8 @@ newtype Positive = Positive Integer deriving (Show)
 positive :: Integer -> Possibly Positive
 positive = smart (("positive: " ++) . show) Positive (>= 1)
 -- | prop> partial function
-positive' :: Integer -> Positive
-positive' = fromJust . positive
+unsafePositive :: Integer -> Positive
+unsafePositive = fromJust . positive
 
 data Application
  = ApplicationPath String

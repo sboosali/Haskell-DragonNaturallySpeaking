@@ -56,7 +56,7 @@ all:
 	cabal build
 	cabal test
 	cabal haddock
-	hlint .
+	hlint sources tests
 
 clean:
 	rm -f *.o *.hi *_objc.[hm] Main

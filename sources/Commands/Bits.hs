@@ -1,4 +1,4 @@
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE ViewPatterns, Rank2Types #-}
 module Commands.Bits where
 import Commands.Etc
 
@@ -6,7 +6,6 @@ import Data.BitVector
 
 import Control.Arrow
 import Data.List
-import Data.String
 import Data.Char
 import Data.Maybe
 
@@ -67,15 +66,21 @@ hex2bits _ = failed
 
 newtype Hexadecimal = Hexadecimal String deriving (Show)
 -- | smart constructor for @Hexadecimal@
+hexadecimal :: String -> Possibly Hexadecimal
 hexadecimal = smart notHexadecimal Hexadecimal isHexadecimal
-notHexadecimal = show >>> ("hexadecimal: "++)
-isHexadecimal = all isHexDigit
+ where
+ notHexadecimal = show >>> ("hexadecimal: "++)
+ isHexadecimal = all isHexDigit
 
 newtype Binary = Binary String deriving (Show)
 -- | smart constructor for @Binary@
+binary :: String -> Possibly Binary
 binary = smart notBinary Binary isBinary
-notBinary = show >>> ("binary: "++)
-isBinary = all (`elem` "01")
+ where
+ notBinary = show >>> ("binary: "++)
+ isBinary = all (`elem` "01")
 
 -- | e.g. @showBits . toBits . readsHexadecimal@
+showBits :: [Bool] -> String
 showBits = map (bool 0 1) >>> map show >>> intercalate ""
+
