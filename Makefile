@@ -9,6 +9,9 @@ PACKAGES   = -package template-haskell -package language-c-quote -package langua
 FRAMEWORKS = -framework Carbon -framework Cocoa -framework Foundation
 LDFLAGS    = -optl-ObjC $(PACKAGES) $(FRAMEWORKS)
 
+CODE = sources tests
+
+
 # # # # # # # # # # # # # # # # # # 
 
 
@@ -50,13 +53,25 @@ main: main.m actor.m
 
 # # # # # # # # # # # # # # # # # # 
 
-default: Haskell
+all: test document check
 
-all:
+build:
 	cabal build
+
+test: build
 	cabal test
+	cat dist/test/*-tests.log
+
+document:
 	cabal haddock
-	hlint sources tests
+	open dist/doc/html/commands/index.html
+
+check:
+	hlint $(CODE)
+
+# # # # # # # # # # # # # # # # # # 
+
+default: Haskell
 
 clean:
 	rm -f *.o *.hi *_objc.[hm] Main
@@ -68,4 +83,3 @@ fresh: clean
 .PHONY: default all clean fresh install Haskell Objective-C
 
 # # # # # # # # # # # # # # # # # # 
-
