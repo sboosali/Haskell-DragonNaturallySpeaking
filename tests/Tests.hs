@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell #-}
 module Main where
 import Commands.Types
 import Commands.Munging
@@ -7,6 +7,7 @@ import Commands.Bits
 import Commands.OSX.Bridge
 
 import Test.Framework (defaultMain, testGroup)
+import Test.Framework.TH
 import Test.Framework.Providers.HUnit (testCase) 
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 import Test.QuickCheck
@@ -16,17 +17,15 @@ import Data.BitVector
 import Data.Char
 
 
-hexadecimalHasRightSize digits = all isHexDigit digits ==>
+prop_hexadecimal_sizeInBits_is_multipleOfFour digits = all isHexDigit digits ==>
  size (read $ "0x" ++ digits) `mod` 4 == 0
 
-validConstructors = maybe True isConstructor . toConstructor
+prop_toConstructor_satisfies_isConstructor = maybe True isConstructor . toConstructor
 
-main = defaultMain tests
 
-tests = [testGroup "TESTS"
- [ testProperty "size `mod` 4 == 0" hexadecimalHasRightSize
- , testProperty "toConstructor satisfies isConstructor" validConstructors
+case_readsBitVector = ("0x00080000" :: BitVector) @?= ("0b00000000000010000000000000000000" :: BitVector)
 
- , testCase "readsBitVector" $ ("0x00080000" :: BitVector) @?= ("0b00000000000010000000000000000000" :: BitVector)
- , testCase "fromNSApplicationPath" $ fromNSApplicationPath "/Applications/Google Chrome.app" @?= GoogleChrome
- ]]
+case_fromNSApplicationPath = fromNSApplicationPath "/Applications/Google Chrome.app" @?= GoogleChrome
+
+
+main = $(defaultMainGenerator)

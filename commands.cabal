@@ -137,5 +137,7 @@ test-suite tests
 
    QuickCheck, HUnit,
    test-framework, test-framework-quickcheck2, test-framework-hunit,
+   test-framework-th,
+
    base ==4.7.*
 
