@@ -1,6 +1,4 @@
 
- wrap Objective-C in Haskell (profile it)
-
  make a Haskell server (one route for a list of word-rule pair)
 
  NarcissisticGrammar: exclusive and allResults
@@ -8,9 +6,7 @@
  set it all up on the work laptop
 
 
- I want to easily extend: by adding commands; by adding applications; their command-to-keypress compilations; etc. typeclasses?
-
- @data@ for simplicity, @class@ for extensibility
+ I want to easily extend: by adding commands; by adding applications; their command-to-keypress compilations; etc.
 
 
  Yesod: setSession for the dynamic list vocabulary on the client (e.g. all tokens in current Emacs buffer)
