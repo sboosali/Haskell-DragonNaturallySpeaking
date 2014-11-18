@@ -1,14 +1,22 @@
+-  -  -  -  -  -  -  -
+Bootstrap
 
- make a Haskell server (one route for a list of word-rule pair)
+ type-safe hot-swap, lets me add rules/actions/contexts, without risking being mute
 
- NarcissisticGrammar: exclusive and allResults
+ make a Haskell server (one route for a list of words)
 
- set it all up on the work laptop
+ Phrase should "bootstrap-suffice"
+
+ trans-compile: "NarcissisticGrammar", exclusive and allResults
+
+ set it all up on the work laptop, with "$ cabal install commands"
 
 
+-  -  -  -  -  -  -  -
  I want to easily extend: by adding commands; by adding applications; their command-to-keypress compilations; etc.
 
 
+-  -  -  -  -  -  -  -
  Yesod: setSession for the dynamic list vocabulary on the client (e.g. all tokens in current Emacs buffer)
 
  Haskell: spawn another thread to keep polling the current application

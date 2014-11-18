@@ -2,6 +2,8 @@
 bin/
 ignore/
 notes
+A.hs
+B.hs
 
 # Haskell
 dist
