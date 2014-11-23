@@ -11,15 +11,17 @@ import Data.Either.Utils
 import Data.List.NonEmpty ( NonEmpty(..),toList,  head,tail,last,init )
 import qualified Data.List.NonEmpty as NonEmpty
 
-import Prelude (Show,Eq,Char,String,($),(.))
+import Prelude (Show,Eq,Char,String,($),(.),undefined)
 import Control.Monad
 import Control.Applicative hiding (many,(<|>))
 import Data.Either
 import Data.Functor
+import Data.List hiding (head)
 import Data.Foldable (foldl,foldr,foldl',foldr',foldl1,foldr1)
 import Data.Typeable
 import Data.Data
 import Language.Haskell.TH
+import Language.Haskell.TH.Syntax
 import Language.Haskell.TH.Quote
 
 
@@ -63,6 +65,26 @@ type NonTerminal = Name
 $(concatMapM makeLenses [''Grammar, ''Production, ''Variant])
 
 
+-- |
+-- only defined for 'Dec'laration contexts
+rule = QuasiQuoter 
+ { quoteExp   = undefined
+ , quotePat   = undefined
+ , quoteType  = undefined
+ , quoteDec   = buildRule
+ }
+
+-- |
+-- 
+-- flow: @'String' -> 'Grammar' -> 'Q' ['Dec']@
+-- 
+buildRule :: String -> Q [Dec]
+buildRule template = return (buildDataD <$> productions') 
+ where
+ grammar = parseGrammar template
+ productions' = toList (grammar^.productions)
+
+-- | unsafe
 parseGrammar :: String -> Grammar
 parseGrammar template = Grammar terminals nonTerminals productions start
  where
@@ -88,7 +110,7 @@ findTerminals = toListOf biplate
 -- > Undo         undo
 -- > |]
 --
--- 'pProduction' (when run) parses it into:
+-- 'pProduction' parses it into:
 --
 -- > Production ''Command [
 -- >  Variant ''ReplaceWith  [Part "replace", Hole ''Phrase, Part "with", Hole ''Phrase],
@@ -100,18 +122,17 @@ findTerminals = toListOf biplate
 pProduction :: Parser Char Production
 pProduction = whitespaced $ Production
  <$> (word "data" *> pNonTerminal <* newline)
- <*> many1 (pVariant <* newline) -- TODO sepEndBy1
+ <*> pVariant `sepBy1` newline
 
 -- |
 -- given the input labeled-production:
 -- 
 -- > "ReplaceWith  replace Phrase with Phrase"
 -- 
--- 'pVariant' (when run) parses it into:
+-- 'pVariant' parses it into:
 --
 -- > Variant ''ReplaceWith (Part "replace" :| [Hole ''Phrase, Part "with", Hole ''Phrase])
 --
--- (bootstrapable?)
 --
 pVariant :: Parser Char Variant
 pVariant = Variant
@@ -120,15 +141,14 @@ pVariant = Variant
 
 -- | 
 -- 
--- (bootstrapable?)
--- 
+-- an alphanumeric Haskell identifier
 pSymbol :: Parser Char Symbol
 pSymbol = try (Part <$> pTerminal)
       <|> try (Hole <$> pNonTerminal)
       <?> "alphanumeric Haskell identifier"
 
 -- | 
--- e.g. lifted @('w':"ith")@
+-- e.g. lifted @(\'w\':"ith")@
 --
 -- the alphabetic subset of valid Haskell type-level identifiers (no "_" or "'")
 pTerminal :: Parser Char Terminal
@@ -137,12 +157,58 @@ pTerminal = spaced $ (:)
  <*> many letter
 
 -- | 
--- e.g. lifted @mkName ('P':"hrase")@
+-- e.g. lifted @mkName (\'P\':"hrase")@
 --
 -- the alphabetic subset of valid Haskell value-level identifiers (no "_" or "'")
 pNonTerminal :: Parser Char NonTerminal
 pNonTerminal = mkName <$> spaced ((:)
  <$> upper
  <*> many letter)
+
+
+-- | 
+-- given the input 'Production':
+--
+-- > Production ''Command [
+-- >  Variant ''ReplaceWith  [Part "replace", Hole ''Phrase, Part "with", Hole ''Phrase],
+-- >  Variant ''Click        [Hole ''Times, Hole ''Button, Part "click"],
+-- >  Variant ''Undo         [Part "undo"]]
+-- 
+-- 'buildDataD' builds a @data@ declaration:
+--  
+-- > data Command
+-- >  = ReplaceWith  Phrase Phrase
+-- >  | Click        Times Button
+-- >  | Undo
+-- >  deriving (Show,Eq)
+--
+-- i.e. ignore 'Terminal's, keep 'NonTerminal's
+--
+buildDataD :: Production -> Dec
+buildDataD (Production lhs (toList -> rhs)) = DataD context typename parameters constructors derived
+ where
+ context      = []
+ typename     = lhs
+ parameters   = []
+ constructors = buildConstructorC <$> rhs
+ derived      = [''Show, ''Eq]
+
+-- | 
+-- given the input 'Variant':
+--
+-- > Variant ''ReplaceWith  [Part "replace", Hole ''Phrase, Part "with", Hole ''Phrase],
+-- 
+-- 'buildConstructorC' builds the constructor "declaration":
+--
+-- > ReplaceWith Phrase Phrase
+--
+buildConstructorC :: Variant -> Con
+buildConstructorC (Variant constructor (toList -> symbols)) = NormalC constructor arguments
+ where
+ arguments = concatMap buildArgument symbols
+
+ buildArgument :: Symbol -> [StrictType]
+ buildArgument (Part {})          = []
+ buildArgument (Hole nonTerminal) = [(NotStrict, ConT nonTerminal)]
 
 
