@@ -75,9 +75,12 @@ library
 
    Commands.Etc,
    Commands.Types,
+
    Commands.Bits,
    Commands.Instances,
+
    Commands.Munging,
+
    Commands.Generic,
    Commands.Generic.Instances,
 

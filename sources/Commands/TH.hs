@@ -4,6 +4,7 @@
 module Commands.TH where
 import Commands.Etc
 import Commands.Text.Parsec
+import Commands.Parse
 
 import Control.Lens
 import Data.Data.Lens
@@ -11,12 +12,13 @@ import Data.Either.Utils
 import Data.List.NonEmpty ( NonEmpty(..),toList,  head,tail,last,init )
 import qualified Data.List.NonEmpty as NonEmpty
 
-import Prelude (Show,Eq,Char,String,($),(.),undefined)
+import Prelude (Show,show,Eq,Char,String,($),(.),undefined)
 import Control.Monad
 import Control.Applicative hiding (many,(<|>))
+import Data.Maybe
 import Data.Either
 import Data.Functor
-import Data.List hiding (head)
+import Data.List hiding (foldl,foldl1,head)
 import Data.Foldable (foldl,foldr,foldl',foldr',foldl1,foldr1)
 import Data.Typeable
 import Data.Data
@@ -65,6 +67,8 @@ type NonTerminal = Name
 $(concatMapM makeLenses [''Grammar, ''Production, ''Variant])
 
 
+
+
 -- |
 -- only defined for 'Dec'laration contexts
 rule = QuasiQuoter 
@@ -79,10 +83,17 @@ rule = QuasiQuoter
 -- flow: @'String' -> 'Grammar' -> 'Q' ['Dec']@
 -- 
 buildRule :: String -> Q [Dec]
-buildRule template = return (buildDataD <$> productions') 
+buildRule template = do
+ return datatypes
+
  where
- grammar = parseGrammar template
+ datatypes = buildDataD <$> productions'
+
  productions' = toList (grammar^.productions)
+ grammar = parseGrammar template
+
+
+
 
 -- | unsafe
 parseGrammar :: String -> Grammar
@@ -91,7 +102,7 @@ parseGrammar template = Grammar terminals nonTerminals productions start
  terminals            = findTerminals $ toList productions
  nonTerminals         = findNonTerminals $ toList productions
  start                = productions ^. (to head . lhs)
- Right productions    = many1 pProduction `parsing` template
+ Right productions    = pGrammar `parsing` template
 
 -- |
 findNonTerminals :: [Production] -> [NonTerminal]
@@ -101,14 +112,21 @@ findNonTerminals = toListOf biplate
 findTerminals :: [Production] -> [Terminal]
 findTerminals = toListOf biplate
 
+
+
+
+-- |
+-- we need the 'try', because 'pGrammar' consumes 'newline's
+pGrammar :: Parser Char (NonEmpty Production)
+pGrammar = (between whitespace whitespace $ pProduction `sepBy1Slow` whitespace) <* eof
+
 -- |
 -- given the input template:
 -- 
 -- > [rule| data Command
 -- > ReplaceWith  replace Phrase with Phrase
 -- > Click        Times Button click
--- > Undo         undo
--- > |]
+-- > Undo         undo |]
 --
 -- 'pProduction' parses it into:
 --
@@ -117,12 +135,13 @@ findTerminals = toListOf biplate
 -- >  Variant ''Click        [Hole ''Times, Hole ''Button, Part "click"],
 -- >  Variant ''Undo         [Part "undo"]]
 -- 
--- (pretty-printing @('NonEmpty' a)@ as @[a]@):
+-- (pretty-printing 'NonEmpty' as @[]@):
 -- 
 pProduction :: Parser Char Production
-pProduction = whitespaced $ Production
+pProduction = Production
  <$> (word "data" *> pNonTerminal <* newline)
- <*> pVariant `sepBy1` newline
+ <*> (pVariant `sepBy1Slow` newline)
+ <?> "Production"
 
 -- |
 -- given the input labeled-production:
@@ -138,6 +157,7 @@ pVariant :: Parser Char Variant
 pVariant = Variant
  <$> pNonTerminal
  <*> many1 pSymbol
+ <?> "Variant"
 
 -- | 
 -- 
@@ -145,7 +165,7 @@ pVariant = Variant
 pSymbol :: Parser Char Symbol
 pSymbol = try (Part <$> pTerminal)
       <|> try (Hole <$> pNonTerminal)
-      <?> "alphanumeric Haskell identifier"
+      <?> "Symbol (alphanumeric Haskell identifier)"
 
 -- | 
 -- e.g. lifted @(\'w\':"ith")@
@@ -164,6 +184,8 @@ pNonTerminal :: Parser Char NonTerminal
 pNonTerminal = mkName <$> spaced ((:)
  <$> upper
  <*> many letter)
+
+
 
 
 -- | 
@@ -210,5 +232,4 @@ buildConstructorC (Variant constructor (toList -> symbols)) = NormalC constructo
  buildArgument :: Symbol -> [StrictType]
  buildArgument (Part {})          = []
  buildArgument (Hole nonTerminal) = [(NotStrict, ConT nonTerminal)]
-
 

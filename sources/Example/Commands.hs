@@ -1,8 +1,10 @@
-{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell #-}
 module Example.Commands where
 import Example.Types
 import Commands.Text.Parsec
 import Commands.TH
+import Commands.Parse
+import Commands.Generic
 
 import qualified Text.Parsec as Parsec
 import Text.InterpolatedString.Perl6
@@ -11,6 +13,7 @@ import Control.Applicative hiding (many,(<|>))
 import Language.Haskell.TH
 
 
+-- stubs
 type Phrase = Words
 type Times = Number
 type Button = Number
@@ -18,19 +21,28 @@ type Button = Number
 newtype Words = Words [String] deriving (Show,Eq)
 newtype Number = Number Integer deriving (Show,Eq)
 
+instance Parse Words where
+ parse context = Words <$> anyWord `manyUntil` context
 
-grammar = many1 pProduction `parsing` [qq| data Command
+instance Parse Number where
+ parse context = (Number . read) <$> (spaced $ Parsec.many1 Parsec.digit)
+
+
+grammarTight = pProduction `parsing` [qq| data Command
 ReplaceWith  replace Phrase with Phrase
 Click        Times Button click
-Undo         undo|]
+Undo         undo |]
 
-
-[rule|
+grammarLoose = pGrammar `parsing` [qq| 
 
 data Command
 ReplaceWith  replace Phrase with Phrase
 Click        Times Button click
 Undo         undo
+
+data Stub
+Stub stub
+
 
 |]
 
@@ -41,8 +53,6 @@ main :: IO ()
 main = do
 
  putStrLn ""
- print grammar
-
- putStrLn ""
- print $ ReplaceWith (Words ["this", "and", "that"]) (Words ["that", "and", "this"])
+ print grammarTight
+ print grammarLoose
 
