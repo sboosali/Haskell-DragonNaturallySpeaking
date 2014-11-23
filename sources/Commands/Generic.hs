@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveGeneric, DefaultSignatures #-}
+{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes #-}
@@ -44,5 +44,6 @@ class Default a where
   default def :: (Generic a, Default' (Rep a)) => a
   def = to (def' :: Rep a x)
 
-instance Default [a] where def = []
+instance Default [a]
+instance Default (Maybe a)
 

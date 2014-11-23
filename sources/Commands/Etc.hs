@@ -3,6 +3,8 @@ module Commands.Etc where
 
 import Safe
 
+import Control.Monad
+
 
 -- | transform from @Bool@, like @maybe@ or @either@
 -- <https://hackage.haskell.org/package/bool-extras-0.4.0/docs/src/Data-Bool-Extras.html#bool>
@@ -55,4 +57,8 @@ readFail = maybe (fail "read") return . readMay
 
 -- |
 type Possibly a = (Monad m) => m a
+
+
+concatMapM       :: (Monad m) => (a -> m [b]) -> [a] -> m [b]
+concatMapM f xs  =  liftM concat (mapM f xs)
 

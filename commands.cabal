@@ -78,13 +78,14 @@ library
    Commands.Bits,
    Commands.Instances,
    Commands.Munging,
-   Commands.Parsers,
    Commands.Generic,
-   Commands.Syntax,
 
    Commands.OSX.Constants,
    Commands.OSX.Bridge,
    Commands.OSX.Marshall,
+
+   Commands.TH,
+   Commands.Text.Parsec,
 
    Example.Types,
    Example.Commands,
@@ -114,6 +115,8 @@ library
    transformers,
    uniplate,
    lens,
+   semigroups,
+   interpolatedstring-perl6,
 
    language-c-quote,
    language-c-inline,
