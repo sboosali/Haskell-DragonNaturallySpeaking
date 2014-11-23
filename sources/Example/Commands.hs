@@ -40,11 +40,21 @@ ReplaceWith  replace Phrase with Phrase
 Click        Times Button click
 Undo         undo
 
+
 data Stub
 Stub stub
 
 
 |]
+
+
+[rule| data Command
+ReplaceWith  replace Phrase with Phrase
+Click        Times Button click
+Undo         undo |]
+
+parseCommand :: String -> Either ParseError Command
+parseCommand = parsing (parse def)
 
 
 -- $ cabal build && cabal exec runhaskell sources/Example/Commands.hs
@@ -56,3 +66,12 @@ main = do
  print grammarTight
  print grammarLoose
 
+ putStrLn ""
+ print $ ReplaceWith (Words ["this", "and", "that"]) (Words ["that", "and", "this"])
+ print $ Click (Number 1) (Number 2)
+ print $ Undo
+
+ putStrLn ""
+ print $ parseCommand "replace this and that with that and this"
+ print $ parseCommand "1 2 click"
+ print $ parseCommand "undo"
