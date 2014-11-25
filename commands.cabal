@@ -91,7 +91,10 @@ library
    Commands.TH,
    Commands.Text.Parsec,
 
+   Commands.Rule.Types,
+
    Commands.Parse,
+   Commands.Parse.Instances,
 
    Example.Types,
    Example.Commands,
