@@ -1,8 +1,8 @@
 {-# LANGUAGE QuasiQuotes, TemplateHaskell #-}
 module Example.Commands where
-import Example.Types
 import Commands.Text.Parsec
 import Commands.TH
+import Commands.TH.Syntax
 import Commands.Parse
 import Commands.Generic
 
@@ -10,7 +10,6 @@ import qualified Text.Parsec as Parsec
 import Text.InterpolatedString.Perl6
 
 import Control.Applicative hiding (many,(<|>))
-import Language.Haskell.TH
 
 
 -- stubs

@@ -74,11 +74,12 @@ library
   exposed-modules:
 
    Commands.Etc,
+   Control.Monad.NonEmpty,
+
    Commands.Types,
 
    Commands.Bits,
    Commands.Instances,
-
    Commands.Munging,
 
    Commands.Generic,
@@ -89,6 +90,10 @@ library
    Commands.OSX.Marshall,
 
    Commands.TH,
+   Commands.TH.Syntax,
+   Commands.TH.Data,
+   Commands.TH.Instance.Parse,
+
    Commands.Text.Parsec,
 
    Commands.Rule.Types,
