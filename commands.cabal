@@ -112,7 +112,13 @@ library
   -- base language which the package is written in
   default-language: Haskell2010
 
-  ghc-options: -Wall -fwarn-incomplete-patterns
+  ghc-options:
+   -Wall
+
+   -fwarn-incomplete-patterns
+   -fwarn-incomplete-uni-patterns
+
+   -fno-warn-name-shadowing
 
   -- other library packages from which modules are imported
   build-depends:
