@@ -90,6 +90,7 @@ library
 
    Commands.TH,
    Commands.Text.Parsec,
+
    Commands.Parse,
 
    Example.Types,

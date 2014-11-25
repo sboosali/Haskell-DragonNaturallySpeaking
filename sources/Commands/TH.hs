@@ -1,13 +1,19 @@
 {-# LANGUAGE DeriveDataTypeable, StandaloneDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
+-- |
+--
+-- 'buildParseI' needs these 'Name's in templates:
+--
+-- * import "Commands.Text.Parsec"  ('Parser','word')
+-- * import "Commands.Parse"        ('Parse','parse','contextual')
+-- * import "Commands.Generic"      ('Default','def')
+--
 module Commands.TH where
 import Commands.Etc
-import Commands.Text.Parsec (Parser,word)  -- ^ 'buildParseI' implicitly depends on these 'Name's
 import Commands.Text.Parsec
-import Commands.Parse (Parse,parse,contextual)  -- ^ 'buildParseI' implicitly depends on these 'Name's
 import Commands.Parse
-import Commands.Generic (Default,def)  -- ^ 'buildParseI' depends on implicitly these 'Name's
+import Commands.Generic (Default,def)
 
 import Control.Lens
 import Data.Data.Lens
@@ -286,7 +292,7 @@ buildConstructorC (Variant constructor (toList -> symbols)) = NormalC constructo
 --
 -- I try to use parentheses (e.g. @f (g x)@) over dollar (e.g. @f $ g x@), as @$@ is syntax for splicing.
 --
--- I try to use @_@ over @'@ in when naming related identifiers (e.g. @f@ and @f'@), as prefix apostrophes are syntax for making 'Name's.
+-- I try to use @_@ over @'@ when naming related identifiers (e.g. @f@ and @f'@), as prefix apostrophes are syntax for making 'Name's. this contradicts @_@ meaning "ignore", like 'mapM_'.
 --
 buildParseI :: Production -> Q [Dec]
 buildParseI (Production lhs rhs) = do
@@ -427,22 +433,24 @@ chunkArguments (Variant name (toList -> symbols)) = fromRight $ constructor `par
 
 -- | 
 -- here and elsewhere in this module: 
--- * "meta" versions of functions have a "E" suffix (i.e. "Exp")
--- * "meta" versions of operators have a "|  |" circumfix (i.e. "[| |]" for templates)
 --
--- mirroring the target code makes the template code more readable
+-- * "syntactic" versions of functions have a \"E\" suffix (i.e. 'Exp')
+-- * "syntactic" versions of operators have a @|  |@ circumfix (i.e. @[| |]@ for templates)
 --
--- the "meta" versions should obey (loosely...): 
+-- mirroring the target code makes the template code more readable for me.
+--
+-- the "syntactic" versions should obey (loosely...): 
+--
 -- @let (|+|) :: Exp -> Exp -> Exp;  x |+| y = UInfixE x (VarE '(+)) y@
 -- @Language.Haskell.Meta.Parse.parseExp "x + y" == Right $ VarE 'x |+| VarE 'y@
 --
--- or:
+-- or maybe:
+--
 -- @let fE :: Exp -> Exp -> Exp;  fE x y = (VarE 'f) `AppE` x `AppE` y@
 -- @Language.Haskell.Meta.Parse.parseExp "f x y" == Right $ fE (VarE 'x) (VarE 'y)@
 --
--- this convention doesn't matter much, but I've been trying to think about how not to make my macro code illegible
+-- this convention doesn't matter much, and I haven't thought it through, but I've been trying to think about how not to make my macro code illegible.
 --
 infixlE :: Name -> Exp -> Exp -> Exp
 infixlE name old new = InfixE (Just old) (VarE name) (Just new)
-
 
