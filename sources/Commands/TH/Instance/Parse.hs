@@ -7,7 +7,7 @@
 -- * import "Commands.Text.Parsec"  ('Parser','word')
 -- * import "Commands.Parse"        ('Parse','parse','contextual')
 -- * import "Commands.Generic"      ('Default','def')
--- * import "Prelude                ('Show','Eq')  
+-- * import "Prelude"               ('Show','Eq')  
 --
 module Commands.TH.Instance.Parse where
 import Commands.TH.Syntax
