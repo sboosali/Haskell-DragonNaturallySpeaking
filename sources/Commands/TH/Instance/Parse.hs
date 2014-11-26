@@ -1,5 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving, DeriveDataTypeable #-}
+{-# LANGUAGE RankNTypes #-}
 -- |
 --
 -- 'buildParseI' needs these 'Name's in templates:
@@ -10,12 +12,13 @@
 -- * import "Prelude"               ('Show','Eq')  
 --
 module Commands.TH.Instance.Parse where
+import Commands.Etc
 import Commands.TH.Syntax
 import Commands.Text.Parsec
 import Commands.Parse
 import Commands.Generic
 
-import Data.List.NonEmpty (NonEmpty(..),toList,head)
+import Data.List.NonEmpty (NonEmpty(..),toList)
 import qualified Data.List.NonEmpty     as NonEmpty
 import qualified Control.Monad.NonEmpty as NonEmpty
 
@@ -23,7 +26,6 @@ import Prelude (show,Char,String,($),(.))
 import Control.Monad
 import Control.Applicative hiding (many,(<|>))
 import Data.Maybe
-import Data.Either
 import Data.Foldable (foldl,foldr,foldl1,foldr1)
 import Language.Haskell.TH
 
@@ -83,7 +85,7 @@ buildParseI (Production lhs rhs) = do
  -- | @foldl operator@ mimics applying left-associative @operator@s
  buildTypeParser :: NonEmpty Variant -> Q Exp
  buildTypeParser rhs = do
-  let constructorSyntaxes = NonEmpty.map chunkArguments rhs
+  constructorSyntaxes <- NonEmpty.mapM chunkArguments         rhs
   constructorsE       <- NonEmpty.mapM buildConstructorParser constructorSyntaxes
   let typeE           =  foldl1 (|<|>|) constructorsE
 
@@ -163,10 +165,9 @@ buildParseI (Production lhs rhs) = do
 --  ArgumentSyntax (''Button) (Just $ Part "click") ["click"]]
 --
 --
-chunkArguments :: Variant -> ConstructorSyntax
-chunkArguments (Variant name (toList -> symbols)) = chunked
+chunkArguments :: Variant -> Possibly ConstructorSyntax
+chunkArguments (Variant name (toList -> symbols)) = parseThrow constructor symbols
  where
- Right chunked = constructor `parsing` symbols
 
  constructor :: Parser Symbol ConstructorSyntax
  constructor = ConstructorSyntax name

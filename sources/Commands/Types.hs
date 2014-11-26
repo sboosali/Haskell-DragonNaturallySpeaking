@@ -127,7 +127,7 @@ data MouseButton = LeftButton | MiddleButton | RightButton
 newtype Positive = Positive Integer deriving (Show)
 -- | smart constructor for @positive@
 positive :: Integer -> Possibly Positive
-positive = smart (("positive: " ++) . show) Positive (>= 1)
+positive = smart (userError . ("positive: " ++) . show) Positive (>= 1)
 -- | prop> partial function
 unsafePositive :: Integer -> Positive
 unsafePositive = fromJust . positive

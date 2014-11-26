@@ -4,6 +4,7 @@ import Commands.Etc
 import Commands.Types
 import Commands.Munging
 
+import Control.Monad.Catch
 import Data.List.Split (splitOn) 
 import Filesystem.Path.CurrentOS()
 import Filesystem.Path
@@ -26,13 +27,13 @@ fromNSApplicationPath path = fromMaybe (ApplicationPath path) (path2application 
 --
 -- prop> monadic failure
 path2application :: String -> Possibly Application
-path2application = fromString >>> basename >>> encodeString darwin >>> (toConstructor >=> readFail)
+path2application = fromString >>> basename >>> encodeString darwin >>> (toConstructor >=> readThrow)
 
 -- | may make a string into a valid Haskell constructor
 --
 -- prop> monadic failure
 toConstructor :: String -> Possibly String
-toConstructor = filter isAscii >>> dropUntil isAlpha >>> splitOn " " >>> map (filter isAlphaNum) >>> classCase >>> list (fail "toConstructor") return
+toConstructor = filter isAscii >>> dropUntil isAlpha >>> splitOn " " >>> map (filter isAlphaNum) >>> classCase >>> list (failed "toConstructor") return
 
 -- | a Haskell constructor is a Haskell identifier that starts with an uppercase letter
 -- 

@@ -11,12 +11,10 @@ import Commands.TH.Data
 import Commands.TH.Instance.Parse
 
 import Control.Lens
-import Data.List.NonEmpty (NonEmpty(..),toList,head)
+import Data.List.NonEmpty (toList)
 
-import Control.Monad
 import Data.Functor
 import Language.Haskell.TH
-import Language.Haskell.TH.Syntax
 import Language.Haskell.TH.Quote
 
 
@@ -38,11 +36,10 @@ rule = QuasiQuoter
 -- 
 buildRule :: String -> Q [Dec]
 buildRule template = do
- let datatypes = buildDataD <$> productions'
+ grammar          <- parseGrammar template
+ let productions' =  toList (grammar^.productions)
+
+ let datatypes  =  buildDataD <$> productions'
  parseInstances <- concatMapM buildParseI productions'
  return (datatypes ++ parseInstances)
-
- where
- productions' = toList (grammar^.productions)
- grammar = parseGrammar template
 

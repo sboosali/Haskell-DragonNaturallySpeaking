@@ -137,6 +137,7 @@ library
    lens,
    semigroups,
    interpolatedstring-perl6,
+   exceptions,
 
    language-c-quote,
    language-c-inline,

@@ -1,5 +1,6 @@
-{-# LANGUAGE QuasiQuotes, TemplateHaskell #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell, Rank2Types, ScopedTypeVariables #-}
 module Example.Commands where
+import Commands.Etc
 import Commands.Text.Parsec
 import Commands.TH
 import Commands.TH.Syntax
@@ -10,6 +11,7 @@ import qualified Text.Parsec as Parsec
 import Text.InterpolatedString.Perl6
 
 import Control.Applicative hiding (many,(<|>))
+import Control.Exception
 
 
 -- stubs
@@ -27,16 +29,16 @@ instance Parse Number where
  parse _ = (Number . read) <$> (spaced $ Parsec.many1 Parsec.digit)
 
 
-grammarTight = pProduction `parsing` [qq| data Command
+grammarTight = pProduction `parseThrow` [qq| data Command
 ReplaceWith  replace Phrase with Phrase
 Undo         undo |]
 
 
-grammarLoose = pGrammar `parsing` [qq| 
+grammarLoose = pGrammar `parseThrow` [qq| 
 
 data Command
 ReplaceWith  replace Phrase with Phrase
-Undo         undo
+Undo         un'do
 
 data Stub
 Stub stub
@@ -51,8 +53,8 @@ Click          Times Button click
 TypeSignature  has type Phrase
 Undo           undo |]
 
-parseCommand :: String -> Either ParseError Command
-parseCommand = parsing (parse def)
+parseCommand :: String -> Possibly Command
+parseCommand = parseThrow (parse def)
 
 
 -- | tests:
@@ -74,8 +76,8 @@ main :: IO ()
 main = do
 
  putStrLn ""
- print grammarTight
- print grammarLoose
+ print =<< grammarTight
+ ((print =<< grammarLoose) `catch` (\ (e :: ParseError) -> print "CAUGHT" >> print e)) >> print "AFTER"
 
  putStrLn ""
  print $ ReplaceWith (Words ["this", "and", "that"]) (Words ["that", "and", "this"])
@@ -84,7 +86,8 @@ main = do
  print $ Undo
 
  putStrLn ""
- print $ parseCommand "replace this and that with that and this"
- print $ parseCommand "1 2 click"
- print $ parseCommand "has type maybe a"
- print $ parseCommand "undo"
+ print =<< parseCommand "replace this and that with that and this"
+ print =<< parseCommand "1 2 click"
+ print =<< parseCommand "has type maybe a"
+ print =<< parseCommand "undo"
+

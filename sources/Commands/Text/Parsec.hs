@@ -1,17 +1,22 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, Rank2Types #-}
+{-# LANGUAGE DeriveDataTypeable, StandaloneDeriving #-}
 -- |
 -- wraps "Text.Parsec"
 module Commands.Text.Parsec
  ( module Text.Parsec
  , module Commands.Text.Parsec
 ) where
+import Commands.Etc
 
 import Text.Parsec hiding (parse,space,many1,sepBy1,endBy1,sepEndBy1)
 import qualified Text.Parsec as Parsec
-import Data.List.NonEmpty ( NonEmpty(..),toList,  head,tail,last,init )
+import Data.List.NonEmpty ( NonEmpty(..),toList,head)
 
+import Control.Exception (Exception)
 import Control.Applicative hiding ((<|>),optional,many)
 import Data.Functor.Identity
+import Data.Typeable
+
 
 
 -- | our 'parse'rs are context-sensitive, but the context is passed as argument.
@@ -19,11 +24,14 @@ import Data.Functor.Identity
 --
 type Parser input output = ParsecT [input] () Identity output
 
+deriving instance Typeable  ParseError
+instance          Exception ParseError
+
+
 -- | 
 -- no state, no source, a list stream.
-parsing :: Parser token result -> [token] -> Either ParseError result
-parsing p = runParser p () ""
-
+parseThrow :: Parser input output -> [input] -> Possibly output
+parseThrow parser = eitherThrow . runParser parser () ""
 
 -- | 'Parsec.many1' is 'NonEmpty' by construction.
 -- e.g. use: elsewhere I use the 'Foldable' instance of 'NonEmpty' for a safe @foldl1@.

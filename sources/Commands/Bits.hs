@@ -17,29 +17,29 @@ readsBitVector ('0':'x':digits) = fromJust $ readsHexadecimal digits
 readsBitVector ('0':'b':digits) = fromJust $ readsBinary digits
 
 -- |
-readsBinary :: String -> Maybe BitVector
+readsBinary :: String -> Possibly BitVector
 readsBinary (binary -> Just (Binary digits)) = do
  let size = length digits
  bits <- mapM bin2bit digits
  return $ bitVec size (fromBits bits)
-readsBinary _ = failed
+readsBinary _ = failed "wrong digit"
 
 -- |
-bin2bit :: Char -> Maybe Bool
+bin2bit :: Char -> Possibly Bool
 bin2bit '0' = return False
 bin2bit '1' = return True
-bin2bit _ = failed
+bin2bit _   = failed "wrong digit"
 
 -- |
-readsHexadecimal :: String -> Maybe BitVector
+readsHexadecimal :: String -> Possibly BitVector
 readsHexadecimal (hexadecimal -> Just (Hexadecimal digits)) = do
  let size = length digits * 4 -- each hex is four bits
- bits <- (fmap concat . sequence) $ map hex2bits digits -- (some monadic artifacts)
+ bits <- concatMapM hex2bits digits
  return $ bitVec size (fromBits bits)
-readsHexadecimal _ = failed
+readsHexadecimal _ = failed "wrong digit"
 
 -- |
-hex2bits :: Char -> Maybe [Bool]
+hex2bits :: Char -> Possibly [Bool]
 hex2bits '0' = return [False,False,False,False]
 hex2bits '1' = return [False,False,False,True ]
 hex2bits '2' = return [False,False,True ,False]
@@ -62,14 +62,14 @@ hex2bits 'c' = hex2bits 'C'
 hex2bits 'd' = hex2bits 'D'
 hex2bits 'e' = hex2bits 'E'
 hex2bits 'f' = hex2bits 'F'
-hex2bits _ = failed
+hex2bits _   = failed "wrong digit"
 
 newtype Hexadecimal = Hexadecimal String deriving (Show)
 -- | smart constructor for @Hexadecimal@
 hexadecimal :: String -> Possibly Hexadecimal
 hexadecimal = smart notHexadecimal Hexadecimal isHexadecimal
  where
- notHexadecimal = show >>> ("hexadecimal: "++)
+ notHexadecimal = show >>> ("hexadecimal: "++) >>> userError
  isHexadecimal = all isHexDigit
 
 newtype Binary = Binary String deriving (Show)
@@ -77,7 +77,7 @@ newtype Binary = Binary String deriving (Show)
 binary :: String -> Possibly Binary
 binary = smart notBinary Binary isBinary
  where
- notBinary = show >>> ("binary: "++)
+ notBinary = show >>> ("binary: "++) >>> userError
  isBinary = all (`elem` "01")
 
 -- | e.g. @showBits . toBits . readsHexadecimal@

@@ -1,10 +1,12 @@
-{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE RankNTypes #-}
 module Commands.Etc where
 
 import Safe
+import Control.Monad.Catch
 
 import Control.Monad
-
+import Control.Exception (throwIO) 
+import Language.Haskell.TH
 
 -- | transform from @Bool@, like @maybe@ or @either@
 -- <https://hackage.haskell.org/package/bool-extras-0.4.0/docs/src/Data-Bool-Extras.html#bool>
@@ -23,8 +25,8 @@ bool _ y True  = y
 -- can be made into a partial function, for convenience, via @fromJust . smart@
 -- 
 -- prop> monadic failure
-smart :: (Monad m) => (a -> String) -> (a -> b) -> (a -> Bool) -> a -> m b
-smart messenger constructor predicate input = bool (fail $ messenger input) (return $ constructor input) (predicate input)
+smart :: (Exception e) => (a -> e) -> (a -> b) -> (a -> Bool) -> a -> Possibly b
+smart messenger constructor predicate input = bool (throwM $ messenger input) (return $ constructor input) (predicate input)
 
 -- | like 'dropWhile', negated, but keeps the first satisfying element
 dropUntil :: (t -> Bool) -> [t] -> [t]
@@ -45,20 +47,40 @@ list :: b -> ([a] -> b) -> [a] -> b
 list empty _ [] = empty
 list _     f xs = f xs
 
-failed :: (Monad m) => m a
-failed = fail ""
+failed :: String -> Possibly a
+failed = throwM . userError
 
 -- |
 -- prop> monadic failure
 --
 -- <http://www.haskell.org/haskellwiki/Failure>
-readFail :: (Monad m, Read a) => String -> m a
-readFail = maybe (fail "read") return . readMay
+readThrow :: (Read a) => String -> Possibly a
+readThrow = maybe (failed "read") return . readMay
 
 -- |
-type Possibly a = (Monad m) => m a
-
-
 concatMapM       :: (Monad m) => (a -> m [b]) -> [a] -> m [b]
 concatMapM f xs  =  liftM concat (mapM f xs)
+
+-- |
+type Possibly a = (MonadThrow m) => m a
+
+-- |
+eitherThrow :: (Exception e) => Either e a -> Possibly a
+eitherThrow = either throwM return
+
+-- | any 'MonadThrow' instance must satisfy @throwM e >> f = throwM e@
+-- 
+-- the docs for 'Q.report' say "use 'fail' to stop". but 'fail' holds a 'String', where 'throwIO' holds an 'Exception'. from experiments/documentation, I'm pretty sure 'throwIO' short-circuits.
+-- 
+-- this instance seems to work, and I think I've satisfied the laws. but, by reading the documentation, not understanding the code. i.e. beware. 'Q' seems too cyclic, simplified:
+-- 
+-- * @class    (Monad m) => 'Quasi' m     where qF :: m a -> m a@
+-- * @instance              'Quasi' 'Q'   where qF (Q a) = Q (qF a)@
+-- * @instance              'Quasi' 'IO'  where qF _ = fail ""@
+-- * @newtype  'Q' a =  Q { unQ ::  forall m. 'Quasi' m => m a  }@
+-- 
+-- what does (e.g.) @Q.report@ ever do? 'Q' and 'IO' are the only instances of 'Quasi'.
+-- 
+instance MonadThrow Q where
+ throwM exception = (runIO . throwIO) exception
 

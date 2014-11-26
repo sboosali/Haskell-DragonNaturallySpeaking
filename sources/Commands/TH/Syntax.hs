@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE Rank2Types #-}
 -- | 
 --
 -- defines the syntax tree and template parsers the "Commands.TH" module hierarchy uses.
@@ -69,14 +70,16 @@ data ArgumentSyntax    = ArgumentSyntax    NonTerminal (Maybe Symbol) [Terminal]
 
 
 
--- | unsafe
-parseGrammar :: String -> Grammar
-parseGrammar template = Grammar terminals nonTerminals productions start
- where
- terminals            = findTerminals $ toList productions
- nonTerminals         = findNonTerminals $ toList productions
- start                = productions ^. (to head . lhs)
- Right productions    = pGrammar `parsing` template
+-- |
+parseGrammar :: String -> Possibly Grammar
+parseGrammar template = do
+
+ productions              <- parseThrow pGrammar template
+ let terminals            =  findTerminals $ toList productions
+ let nonTerminals         =  findNonTerminals $ toList productions
+ let start                =  productions ^. (to head . lhs)
+
+ return $ Grammar terminals nonTerminals productions start
 
 -- |
 findNonTerminals :: [Production] -> [NonTerminal]
@@ -89,7 +92,7 @@ findTerminals = toListOf biplate
 -- |
 -- we need the 'try', because 'pGrammar' consumes 'newline's
 pGrammar :: Parser Char (NonEmpty Production)
-pGrammar = (between whitespace whitespace $ pProduction `sepBy1Slow` whitespace) <* eof
+pGrammar = between whitespace (whitespace <* eof) $ pProduction `sepBy1Slow` whitespace
 
 -- |
 -- given the input template:
