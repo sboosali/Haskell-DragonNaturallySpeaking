@@ -36,7 +36,9 @@ rule = QuasiQuoter
 -- 
 buildRule :: String -> Q [Dec]
 buildRule template = do
- grammar          <- parseGrammar template
+ Loc { loc_start = (line, column) } <- location
+
+ grammar          <- parseGrammar (line, column) template
  let productions' =  toList (grammar^.productions)
 
  let datatypes  =  buildDataD <$> productions'

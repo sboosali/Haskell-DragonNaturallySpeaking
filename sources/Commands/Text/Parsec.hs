@@ -16,7 +16,7 @@ import Control.Exception (Exception)
 import Control.Applicative hiding ((<|>),optional,many)
 import Data.Functor.Identity
 import Data.Typeable
-
+import Language.Haskell.TH.Syntax (CharPos) 
 
 
 -- | our 'parse'rs are context-sensitive, but the context is passed as argument.
@@ -119,4 +119,11 @@ space = char ' ' <?> "space"
 -- any Unicode space character, and the control characters: \t, \n, \r, \f, \v
 whitespace :: Parser Char ()
 whitespace = Parsec.spaces
+
+-- | 
+withPosition :: CharPos -> Parser i o -> Parser i o
+withPosition (line, column) parser = do
+ position <- getPosition
+ setPosition $ setSourceLine (setSourceColumn position column) line
+ parser
 

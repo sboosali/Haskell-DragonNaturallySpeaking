@@ -71,10 +71,10 @@ data ArgumentSyntax    = ArgumentSyntax    NonTerminal (Maybe Symbol) [Terminal]
 
 
 -- |
-parseGrammar :: String -> Possibly Grammar
-parseGrammar template = do
+parseGrammar :: CharPos -> String -> Possibly Grammar
+parseGrammar position template = do
 
- productions              <- parseThrow pGrammar template
+ productions              <- withPosition position pGrammar `parseThrow` template
  let terminals            =  findTerminals $ toList productions
  let nonTerminals         =  findNonTerminals $ toList productions
  let start                =  productions ^. (to head . lhs)

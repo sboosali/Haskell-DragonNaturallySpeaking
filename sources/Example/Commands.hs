@@ -39,12 +39,17 @@ grammarLoose = pGrammar `parseThrow` [qq|
 
 data Command
 ReplaceWith  replace Phrase with Phrase
-Undo         un'do
+Undo         undo
 
 data Stub
 Stub stub
 
 
+|]
+
+grammarWrong = pGrammar `parseThrow` [qq| 
+data Stub
+Stub st'ub
 |]
 
 
@@ -53,6 +58,9 @@ ReplaceWith    replace Phrase with Phrase
 Click          Times Button click
 TypeSignature  has type Phrase
 Undo           undo |]
+
+-- Undo           un'do |]
+-- reports error, with file's (not template's) line/column
 
 parseCommand :: String -> Possibly Command
 parseCommand = parseThrow (parse def)
@@ -78,7 +86,8 @@ main = do
 
  putStrLn ""
  print =<< grammarTight
- ((print =<< grammarLoose) `catch` (\ (e :: ParseError) -> print "CAUGHT" >> print e)) >> print "AFTER"
+ print =<< grammarLoose
+ ((print =<< grammarWrong) `catch` (\ (e :: ParseError) -> print "CAUGHT" >> print e)) >> print "AFTER"
 
  putStrLn ""
  print $ ReplaceWith (Words ["this", "and", "that"]) (Words ["that", "and", "this"])
