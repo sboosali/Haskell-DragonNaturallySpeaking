@@ -20,11 +20,10 @@ bool _ y True  = y
 -- 
 -- the @input@ must satisfy the @predicate@ to reach the @constructor@
 -- 
--- prop> total function
--- 
+-- monadic failure.
+--
 -- can be made into a partial function, for convenience, via @fromJust . smart@
 -- 
--- prop> monadic failure
 smart :: (Exception e) => (a -> e) -> (a -> b) -> (a -> Bool) -> a -> Possibly b
 smart messenger constructor predicate input = bool (throwM $ messenger input) (return $ constructor input) (predicate input)
 
@@ -51,7 +50,6 @@ failed :: String -> Possibly a
 failed = throwM . userError
 
 -- |
--- prop> monadic failure
 --
 -- <http://www.haskell.org/haskellwiki/Failure>
 readThrow :: (Read a) => String -> Possibly a

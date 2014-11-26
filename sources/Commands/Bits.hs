@@ -11,7 +11,7 @@ import Data.Maybe
 
 
 -- | parses hexadecimal ("0x") and binary ("0b") "literals"
--- prop> partial function
+--
 readsBitVector :: String -> BitVector
 readsBitVector ('0':'x':digits) = fromJust $ readsHexadecimal digits
 readsBitVector ('0':'b':digits) = fromJust $ readsBinary digits

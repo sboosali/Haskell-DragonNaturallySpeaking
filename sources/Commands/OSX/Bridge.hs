@@ -24,13 +24,13 @@ fromNSApplicationPath path = fromMaybe Global (path2application path)
 
 -- | maybe-dynamically 'read's a path to an 'Application'
 --
--- prop> monadic failure
+--
 path2application :: String -> Possibly Application
 path2application = fromString >>> basename >>> encodeString darwin >>> (toConstructor >=> readThrow)
 
 -- | may make a string into a valid Haskell constructor
 --
--- prop> monadic failure
+--
 toConstructor :: String -> Possibly String
 toConstructor = filter isAscii >>> dropUntil isAlpha >>> splitOn " " >>> map (filter isAlphaNum) >>> classCase >>> list (failed "toConstructor") return
 
