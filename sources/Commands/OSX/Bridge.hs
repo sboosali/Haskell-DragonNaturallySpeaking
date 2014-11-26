@@ -1,10 +1,9 @@
-{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE RankNTypes #-}
 module Commands.OSX.Bridge where
 import Commands.Etc
 import Commands.Types
 import Commands.Munging
 
-import Control.Monad.Catch
 import Data.List.Split (splitOn) 
 import Filesystem.Path.CurrentOS()
 import Filesystem.Path
@@ -21,7 +20,7 @@ import Data.Maybe
 
 -- | makes a dynamic 'String' into a static 'Application', or a default dynamic 'Application'
 fromNSApplicationPath :: String -> Application
-fromNSApplicationPath path = fromMaybe (ApplicationPath path) (path2application path)
+fromNSApplicationPath path = fromMaybe Global (path2application path)
 
 -- | maybe-dynamically 'read's a path to an 'Application'
 --

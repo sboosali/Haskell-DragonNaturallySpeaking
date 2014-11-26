@@ -1,4 +1,5 @@
-{-# LANGUAGE QuasiQuotes, TemplateHaskell, Rank2Types, ScopedTypeVariables #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell #-}
+{-# LANGUAGE RankNTypes, ScopedTypeVariables #-}
 module Example.Commands where
 import Commands.Etc
 import Commands.Text.Parsec

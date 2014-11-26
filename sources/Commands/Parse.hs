@@ -1,4 +1,4 @@
-{-# LANGUAGE ExistentialQuantification, Rank2Types, FlexibleContexts #-}
+{-# LANGUAGE ExistentialQuantification, RankNTypes, FlexibleContexts #-}
 module Commands.Parse where
 import Commands.Text.Parsec
 import Commands.Generic

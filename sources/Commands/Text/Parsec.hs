@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, Rank2Types #-}
+{-# LANGUAGE FlexibleContexts, RankNTypes #-}
 {-# LANGUAGE DeriveDataTypeable, StandaloneDeriving #-}
 -- |
 -- wraps "Text.Parsec"

@@ -1,4 +1,4 @@
-{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE RankNTypes #-}
 module Commands.Types where
 import Commands.Etc
 
@@ -128,12 +128,12 @@ newtype Positive = Positive Integer deriving (Show)
 -- | smart constructor for @positive@
 positive :: Integer -> Possibly Positive
 positive = smart (userError . ("positive: " ++) . show) Positive (>= 1)
--- | prop> partial function
+-- |
 unsafePositive :: Integer -> Positive
 unsafePositive = fromJust . positive
 
 data Application
- = ApplicationPath String
+ = Global
  | GoogleChrome
  | Emacs
  | Terminal

@@ -1,4 +1,4 @@
-{-# LANGUAGE ViewPatterns, Rank2Types #-}
+{-# LANGUAGE ViewPatterns, RankNTypes #-}
 module Commands.Bits where
 import Commands.Etc
 
