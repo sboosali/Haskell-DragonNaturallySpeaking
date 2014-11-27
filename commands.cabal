@@ -93,6 +93,7 @@ library
    Commands.TH.Syntax,
    Commands.TH.Data,
    Commands.TH.Instance.Parse,
+   Commands.TH.Instance.Grammar,
 
    Commands.Text.Parsec,
 
@@ -100,6 +101,8 @@ library
 
    Commands.Parse,
    Commands.Parse.Instances,
+
+   Commands.Grammar,
 
    Example.Types,
    Example.Commands,
@@ -138,6 +141,7 @@ library
    semigroups,
    interpolatedstring-perl6,
    exceptions,
+   th-lift,
 
    language-c-quote,
    language-c-inline,

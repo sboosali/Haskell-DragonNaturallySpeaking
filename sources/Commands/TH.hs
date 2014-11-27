@@ -9,6 +9,7 @@ import Commands.Etc
 import Commands.TH.Syntax
 import Commands.TH.Data
 import Commands.TH.Instance.Parse
+import Commands.TH.Instance.Grammar
 import Commands.Text.Parsec
 
 import Control.Lens
@@ -38,9 +39,10 @@ rule = QuasiQuoter
 buildRule :: String -> Q [Dec]
 buildRule template = do
  grammar          <- pGrammar `parseTemplate` template
- let productions' =  toList (grammar^.productions)
+ let productions'  = toList (grammar^.productions)
 
- let datatypes  =  buildDataD <$> productions'
- parseInstances <- concatMapM buildParseI productions'
- return (datatypes ++ parseInstances)
+ let datatypes    = buildDataD <$> productions'
+ parseInstances  <- concatMapM buildParseI productions'
+ grammarInstance <- buildGrammarI grammar
 
+ return (datatypes ++ parseInstances ++ grammarInstance)

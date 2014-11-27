@@ -12,6 +12,7 @@ import Commands.Text.Parsec
 import Control.Lens
 import Data.Data.Lens
 import Data.List.NonEmpty (NonEmpty(..),toList,head)
+import Language.Haskell.TH.Lift
 
 import Prelude hiding (head)
 import Control.Applicative hiding (many,(<|>))
@@ -59,6 +60,9 @@ type NonTerminal = Name
 -- splice must follow declarations
 $(concatMapM makeLenses [''Grammar, ''Production, ''Variant])
 
+-- 'Char' and @[a]@ and 'Name' have 'Lift' instances 
+$(concatMapM deriveLift [''Grammar, ''Production, ''Variant, ''Symbol, ''NonEmpty])
+
 -- |
 data ConstructorSyntax = ConstructorSyntax Name [Terminal] [ArgumentSyntax]
  deriving (Show)
@@ -80,11 +84,11 @@ fromProductions productions = Grammar terminals nonTerminals productions start
  nonTerminals         =  findNonTerminals $ toList productions
  start                =  productions ^. (to head . lhs)
 
--- |
+-- | unique
 findNonTerminals :: [Production] -> [NonTerminal]
 findNonTerminals = toListOf biplate
 
--- |
+-- | unique
 findTerminals :: [Production] -> [Terminal]
 findTerminals = toListOf biplate
 

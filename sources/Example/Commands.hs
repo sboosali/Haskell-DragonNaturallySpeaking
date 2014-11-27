@@ -2,11 +2,12 @@
 {-# LANGUAGE RankNTypes, ScopedTypeVariables #-}
 module Example.Commands where
 import Commands.Etc
-import Commands.Text.Parsec
 import Commands.TH
 import Commands.TH.Syntax
-import Commands.Parse
 import Commands.Generic
+import Commands.Text.Parsec
+import Commands.Parse
+import Commands.Grammar
 
 import qualified Text.Parsec as Parsec
 import Text.InterpolatedString.Perl6
@@ -83,7 +84,6 @@ parseCommand = parseThrow (parse def)
 --
 main :: IO ()
 main = do
-
  putStrLn ""
  print =<< grammarTight
  print =<< grammarLoose
@@ -101,3 +101,5 @@ main = do
  print =<< parseCommand "has type maybe a"
  print =<< parseCommand "undo"
 
+ putStrLn ""
+ print $ grammar (undefined :: Command)
