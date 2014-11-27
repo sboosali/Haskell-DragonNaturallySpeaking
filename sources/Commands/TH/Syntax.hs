@@ -38,14 +38,14 @@ data Production = Production
  }
  deriving (Show,Eq,Data,Typeable)
 
--- |
+-- | "label" as in Labeled BNF (LBNF). see <http://hackage.haskell.org/package/BNFC-meta>.
 data Variant = Variant
- { _constructor :: NonTerminal -- ^ constructor name
- , _symbols     :: NonEmpty Symbol
+ { _label   :: NonTerminal -- ^ constructor name
+ , _symbols :: NonEmpty Symbol
  }
  deriving (Show,Eq,Data,Typeable)
 
--- |
+-- | an 'rhs' is some 'Terminal's and 'NonTerminal's
 data Symbol
  = Part Terminal
  | Hole NonTerminal
@@ -76,7 +76,7 @@ data ArgumentSyntax    = ArgumentSyntax    NonTerminal (Maybe Symbol) [Terminal]
 pGrammar :: Parser Char Grammar
 pGrammar = fromProductions <$> pProductions
 
--- | extracts a 'Grammar'\'s fields from 'Production's
+-- | extracts a 'Grammar's fields from 'Production's
 fromProductions :: NonEmpty Production -> Grammar
 fromProductions productions = Grammar terminals nonTerminals productions start
  where
