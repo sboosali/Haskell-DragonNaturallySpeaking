@@ -8,6 +8,7 @@ import Control.Monad
 import Control.Exception (throwIO) 
 import Language.Haskell.TH
 
+
 -- | transform from @Bool@, like @maybe@ or @either@
 -- <https://hackage.haskell.org/package/bool-extras-0.4.0/docs/src/Data-Bool-Extras.html#bool>
 bool :: a -> a -> Bool -> a

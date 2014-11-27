@@ -9,6 +9,7 @@ import Commands.Etc
 import Commands.TH.Syntax
 import Commands.TH.Data
 import Commands.TH.Instance.Parse
+import Commands.Text.Parsec
 
 import Control.Lens
 import Data.List.NonEmpty (toList)
@@ -36,9 +37,7 @@ rule = QuasiQuoter
 -- 
 buildRule :: String -> Q [Dec]
 buildRule template = do
- Loc { loc_start = (line, column) } <- location
-
- grammar          <- parseGrammar (line, column) template
+ grammar          <- pGrammar `parseTemplate` template
  let productions' =  toList (grammar^.productions)
 
  let datatypes  =  buildDataD <$> productions'

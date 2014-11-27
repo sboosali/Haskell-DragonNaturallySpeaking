@@ -68,18 +68,17 @@ data ArgumentSyntax    = ArgumentSyntax    NonTerminal (Maybe Symbol) [Terminal]
  deriving (Show)
 
 
+-- | wraps 'pProductions'
+pGrammar :: Parser Char Grammar
+pGrammar = fromProductions <$> pProductions
 
-
--- |
-parseGrammar :: CharPos -> String -> Possibly Grammar
-parseGrammar position template = do
-
- productions              <- withPosition position pGrammar `parseThrow` template
- let terminals            =  findTerminals $ toList productions
- let nonTerminals         =  findNonTerminals $ toList productions
- let start                =  productions ^. (to head . lhs)
-
- return $ Grammar terminals nonTerminals productions start
+-- | extracts a 'Grammar'\'s fields from 'Production's
+fromProductions :: NonEmpty Production -> Grammar
+fromProductions productions = Grammar terminals nonTerminals productions start
+ where
+ terminals            =  findTerminals $ toList productions
+ nonTerminals         =  findNonTerminals $ toList productions
+ start                =  productions ^. (to head . lhs)
 
 -- |
 findNonTerminals :: [Production] -> [NonTerminal]
@@ -89,10 +88,10 @@ findNonTerminals = toListOf biplate
 findTerminals :: [Production] -> [Terminal]
 findTerminals = toListOf biplate
 
--- |
--- we need the 'try', because 'pGrammar' consumes 'newline's
-pGrammar :: Parser Char (NonEmpty Production)
-pGrammar = between whitespace (whitespace <* eof) $ pProduction `sepBy1Slow` whitespace
+-- | we need the 'try', because 'pProductions' consumes 'newline's
+--
+pProductions :: Parser Char (NonEmpty Production)
+pProductions = between whitespace (whitespace <* eof) $ pProduction `sepBy1Slow` whitespace
 
 -- |
 -- given the input template:

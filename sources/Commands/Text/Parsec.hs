@@ -16,12 +16,15 @@ import Control.Exception (Exception)
 import Control.Applicative hiding ((<|>),optional,many)
 import Data.Functor.Identity
 import Data.Typeable
+import Language.Haskell.TH
 import Language.Haskell.TH.Syntax (CharPos) 
 
 
--- | our 'parse'rs are context-sensitive, but the context is passed as argument.
--- i.e. we would want @Reader@ with @local@, if anything, not "non-@local@" @State@, hence the unit @State@ '()'.
+-- | no state, a list stream.
 --
+-- our 'parse'rs are context-sensitive, but the context is passed as argument.
+-- i.e. we would want @Reader@ with @local@, if anything, not "non-@local@" @State@, hence the unit @State@ '()'.
+-- 
 type Parser input output = ParsecT [input] () Identity output
 
 deriving instance Typeable  ParseError
@@ -29,9 +32,20 @@ instance          Exception ParseError
 
 
 -- | 
--- no state, no source, a list stream.
-parseThrow :: Parser input output -> [input] -> Possibly output
+--
+parseThrow :: Parser i o -> [i] -> Possibly o
 parseThrow parser = eitherThrow . runParser parser () ""
+
+-- | offsets a 'Parser'\'s position with the file's line/column numbers.
+--
+-- any EDSL should report a parse error's position in: the source-language's file, not the target-language's template.
+--
+parseTemplate :: Parser i o -> [i] -> Q o
+parseTemplate parser template = do
+ Loc { loc_start = (line, column) } <- location
+ result <- withPosition (line, column) parser `parseThrow` template
+ return result
+
 
 -- | 'Parsec.many1' is 'NonEmpty' by construction.
 -- e.g. use: elsewhere I use the 'Foldable' instance of 'NonEmpty' for a safe @foldl1@.
