@@ -9,6 +9,7 @@ import Commands.Text.Parsec
 import Commands.Parse
 import Commands.Grammar
 
+import Control.Lens
 import qualified Text.Parsec as Parsec
 import Text.InterpolatedString.Perl6
 
@@ -30,12 +31,12 @@ instance Parse Words where
 instance Parse Number where
  parse _ = (Number . read) <$> (spaced $ Parsec.many1 Parsec.digit)
 
-
+grammarTight :: Possibly Production
 grammarTight = pProduction `parseThrow` [qq| data Command
 ReplaceWith  replace Phrase with Phrase
 Undo         undo |]
 
-
+grammarLoose :: Possibly Grammar
 grammarLoose = pGrammar `parseThrow` [qq| 
 
 data Command
@@ -48,6 +49,7 @@ Stub stub
 
 |]
 
+grammarWrong :: Possibly Grammar
 grammarWrong = pGrammar `parseThrow` [qq| 
 data Stub
 Stub st'ub
@@ -102,4 +104,14 @@ main = do
  print =<< parseCommand "undo"
 
  putStrLn ""
- print $ grammar (undefined :: Command)
+ let grammar' = grammar (undefined :: Command)
+ print grammar'
+
+ putStrLn ""
+ print $ grammar' ^.start
+ print $ grammar' ^..terminals
+ print $ grammar' ^..nonTerminals
+
+ putStrLn ""
+ print $ getHoles grammar'
+ print $ getParts grammar'

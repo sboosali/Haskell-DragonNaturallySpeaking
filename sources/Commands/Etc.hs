@@ -6,11 +6,14 @@ import Control.Monad.Catch
 
 import Control.Monad
 import Control.Exception (throwIO) 
+import qualified Data.Set as Set
 import Language.Haskell.TH
 
 
 -- | transform from @Bool@, like @maybe@ or @either@
 -- <https://hackage.haskell.org/package/bool-extras-0.4.0/docs/src/Data-Bool-Extras.html#bool>
+-- 
+-- isomorphic to @if_then_else_@
 bool :: a -> a -> Bool -> a
 bool x _ False = x
 bool _ y True  = y
@@ -37,6 +40,9 @@ dropUntil p (x:xs)
 
 either2maybe :: Either a b -> Maybe b
 either2maybe = either (const Nothing) Just
+
+maybe2bool :: Maybe b -> Bool
+maybe2bool = maybe False (const True)
 
 -- | transform from @[a]@, like @maybe@ or @either@
 --
@@ -82,4 +88,13 @@ eitherThrow = either throwM return
 -- 
 instance MonadThrow Q where
  throwM exception = (runIO . throwIO) exception
+
+-- | see <https://github.com/nh2/haskell-ordnub>
+uniques :: (Ord a) => [a] -> [a]
+uniques l = go Set.empty l
+ where
+ go _ [] = []
+ go s (x:xs) = if   x `Set.member` s
+               then     go s                xs
+               else x : go (Set.insert x s) xs
 

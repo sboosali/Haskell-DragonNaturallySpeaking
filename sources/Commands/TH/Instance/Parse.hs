@@ -17,17 +17,27 @@ import Commands.TH.Syntax
 import Commands.Text.Parsec
 import Commands.Parse
 import Commands.Generic
+import Commands.Grammar
 
 import Data.List.NonEmpty (NonEmpty(..),toList)
 import qualified Data.List.NonEmpty     as NonEmpty
 import qualified Control.Monad.NonEmpty as NonEmpty
 
-import Prelude (show,Char,String,($),(.))
+import Prelude (Show,show,Char,String,($),(.),map)
 import Control.Monad
 import Control.Applicative hiding (many,(<|>))
 import Data.Maybe
 import Data.Foldable (foldl,foldr,foldl1,foldr1)
 import Language.Haskell.TH
+
+
+-- |
+data ConstructorSyntax = ConstructorSyntax Name [Terminal] [ArgumentSyntax]
+ deriving (Show)
+
+-- |
+data ArgumentSyntax    = ArgumentSyntax    NonTerminal (Maybe Symbol) [Terminal]
+ deriving (Show)
 
 
 -- | 
@@ -62,7 +72,7 @@ import Language.Haskell.TH
 -- I try to use @_@ over @'@ when naming related identifiers (e.g. @f@ and @f'@), as prefix apostrophes are syntax for making 'Name's. this contradicts @_@ meaning "ignore", like 'mapM_'.
 --
 buildParseI :: Production -> Q [Dec]
-buildParseI (Production lhs rhs) = do
+buildParseI (Production (NonTerminal lhs) rhs) = do
 
  let typ = return (ConT lhs)
  let pat = return (VarP contextN)
@@ -71,6 +81,7 @@ buildParseI (Production lhs rhs) = do
  [d| instance Parse $(typ) where parse $(pat) = $(exp) |]
 
  where
+
  -- the argument to the built function
  contextN = mkName "context"
 
@@ -95,7 +106,7 @@ buildParseI (Production lhs rhs) = do
   (|<|>|) = infixlE '(<|>)
 
  buildConstructorParser :: ConstructorSyntax -> Q Exp
- buildConstructorParser (ConstructorSyntax name parts arguments) = do
+ buildConstructorParser (ConstructorSyntax name (map unTerminal -> parts) arguments) = do
 
   nameE            <- [e| pure $(nameE_) |]              -- e.g. pure ReplaceWith
   partsE           <- mapM wordE parts                   -- e.g. [word "replace"]
@@ -116,7 +127,7 @@ buildParseI (Production lhs rhs) = do
 
  -- | 
  buildArgumentParser :: ArgumentSyntax -> Q Exp
- buildArgumentParser (ArgumentSyntax _ context parts) = do
+ buildArgumentParser (ArgumentSyntax _ context (map unTerminal -> parts)) = do
   parserE       <- parserE_
   partsE        <- partsE_
   let argumentE =  foldl (|<*|) parserE partsE
@@ -139,11 +150,11 @@ buildParseI (Production lhs rhs) = do
   -- * make a new full-parser context (e.g. @contextual (parse def :: Parser Char Number)@) 
   -- 
   contextE :: Maybe Symbol -> Q Exp
-  contextE Nothing                   = return $ VarE contextN
-  contextE (Just (Part terminal))    = [e|  contextual $parserE  |] 
-   where parserE                      = wordE terminal
-  contextE (Just (Hole nonTerminal)) = [e|  contextual ( parse def :: $parserT )  |]
-   where parserT                      = [t|  Parser Char $(return (ConT nonTerminal))  |]
+  contextE Nothing                          = return $ VarE contextN
+  contextE (Just (Part (Terminal token)))   = [e|  contextual $parserE  |] 
+   where parserE = wordE token
+  contextE (Just (Hole (NonTerminal name))) = [e|  contextual ( parse def :: $parserT )  |]
+   where parserT = [t|  Parser Char $(return (ConT name))  |]
 
   partsE_ = mapM wordE parts :: Q [Exp]
 
@@ -166,7 +177,7 @@ buildParseI (Production lhs rhs) = do
 --
 --
 chunkArguments :: Variant -> Possibly ConstructorSyntax
-chunkArguments (Variant name (toList -> symbols)) = parseThrow constructor symbols
+chunkArguments (Variant name (toList -> symbols)) = constructor `parseThrow` symbols
  where
 
  constructor :: Parser Symbol ConstructorSyntax
@@ -180,10 +191,10 @@ chunkArguments (Variant name (toList -> symbols)) = parseThrow constructor symbo
   <*> lookAhead (optionMaybe symbol)
   <*> many part
 
- part :: Parser Symbol String
+ part :: Parser Symbol Terminal
  part = tokenPrim show nextPosition testPart
 
- hole :: Parser Symbol Name
+ hole :: Parser Symbol NonTerminal
  hole = tokenPrim show nextPosition testHole
 
  symbol :: Parser Symbol Symbol
@@ -195,5 +206,6 @@ chunkArguments (Variant name (toList -> symbols)) = parseThrow constructor symbo
  testHole (Hole x) = Just x
  testHole _ = Nothing
 
+ -- we increment the column by one, because each Symbol is a single token
  nextPosition position _ _ = incSourceColumn position 1
 

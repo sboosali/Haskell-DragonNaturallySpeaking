@@ -11,6 +11,7 @@ import Commands.TH.Data
 import Commands.TH.Instance.Parse
 import Commands.TH.Instance.Grammar
 import Commands.Text.Parsec
+import Commands.Grammar
 
 import Control.Lens
 import Data.List.NonEmpty (toList)

@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ViewPatterns #-}
 module Commands.TH.Data where
-import Commands.TH.Syntax
+import Commands.Grammar
 
 import Data.List.NonEmpty (NonEmpty(..),toList,head)
 
@@ -32,11 +32,11 @@ import Language.Haskell.TH.Syntax
 buildDataD :: Production -> Dec
 buildDataD (Production lhs (toList -> rhs)) = DataD context typename parameters constructors derived
  where
- context      = []
- typename     = lhs
- parameters   = []
- constructors = buildConstructorC <$> rhs
- derived      = [''Show, ''Eq]
+ context              = []
+ NonTerminal typename = lhs
+ parameters           = []
+ constructors         = buildConstructorC <$> rhs
+ derived              = [''Show, ''Eq]
 
 -- | 
 -- given the input 'Variant':
@@ -53,6 +53,6 @@ buildConstructorC (Variant constructor (toList -> symbols)) = NormalC constructo
  arguments = concatMap buildArgument symbols
 
  buildArgument :: Symbol -> [StrictType]
- buildArgument (Part {})          = []
- buildArgument (Hole nonTerminal) = [(NotStrict, ConT nonTerminal)]
+ buildArgument (Part {})                 = []
+ buildArgument (Hole (NonTerminal name)) = [(NotStrict, ConT name)]
 

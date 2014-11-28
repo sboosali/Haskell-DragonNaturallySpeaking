@@ -6,7 +6,6 @@
 -- * import "Commands.Grammar" (Grammatical, grammar)
 --
 module Commands.TH.Instance.Grammar where
-import Commands.TH.Syntax
 import Commands.Grammar
 
 import Control.Lens
@@ -35,7 +34,8 @@ buildGrammarI g = do
  [d| instance Grammatical $(typ) where grammar $(pat) = $(exp) |]
 
  where
- typ = return (ConT (g^.root))
+ typ = return (ConT name)
  pat = [p| _ |]
  exp = lift g
 
+ NonTerminal name = g^.start
