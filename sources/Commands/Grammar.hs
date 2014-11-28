@@ -82,6 +82,8 @@ grammar'symbols :: Traversal' Grammar Symbol
 grammar'symbols = productions.each.rhs.each.symbols.each
 
 
+getStart = unNonTerminal . view start
+
 getParts = uniques . map unTerminal . toListOf terminals
 
 getHoles = uniques . map unNonTerminal . toListOf nonTerminals

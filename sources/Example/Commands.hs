@@ -113,5 +113,6 @@ main = do
  print $ grammar' ^..nonTerminals
 
  putStrLn ""
+ print $ getStart grammar'
  print $ getHoles grammar'
  print $ getParts grammar'

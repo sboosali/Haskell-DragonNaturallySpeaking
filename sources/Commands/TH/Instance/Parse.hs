@@ -74,8 +74,8 @@ data ArgumentSyntax    = ArgumentSyntax    NonTerminal (Maybe Symbol) [Terminal]
 buildParseI :: Production -> Q [Dec]
 buildParseI (Production (NonTerminal lhs) rhs) = do
 
- let typ = return (ConT lhs)
- let pat = return (VarP contextN)
+ let typ = pure (ConT lhs)
+ let pat = pure (VarP contextN)
  let exp = buildTypeParser rhs
 
  [d| instance Parse $(typ) where parse $(pat) = $(exp) |]
@@ -91,7 +91,7 @@ buildParseI (Production (NonTerminal lhs) rhs) = do
  wordE :: String -> Q Exp
  wordE wordS = [e|  word  $wordL  |]
   where
-  wordL = return $ (LitE . StringL) wordS
+  wordL = pure ((LitE . StringL) wordS)
 
  -- | @foldl operator@ mimics applying left-associative @operator@s
  buildTypeParser :: NonEmpty Variant -> Q Exp
@@ -100,7 +100,7 @@ buildParseI (Production (NonTerminal lhs) rhs) = do
   constructorsE       <- NonEmpty.mapM buildConstructorParser constructorSyntaxes
   let typeE           =  foldl1 (|<|>|) constructorsE
 
-  return typeE
+  pure typeE
 
   where
   (|<|>|) = infixlE '(<|>)
@@ -115,7 +115,7 @@ buildParseI (Production (NonTerminal lhs) rhs) = do
   argumentsE       <- mapM buildArgumentParser arguments -- e.g. [(parse ... <* word "with")), (parse ...)]
   let parserE      =  foldl (|<*>|) constructorE argumentsE
 
-  [e| try $(return parserE) |]
+  [e| try $(pure parserE) |]
 
   where
 
@@ -123,7 +123,7 @@ buildParseI (Production (NonTerminal lhs) rhs) = do
   (|<*|)  = infixlE '(<*)
   (|<*>|) = infixlE '(<*>)
 
-  nameE_ = return $ ConE name
+  nameE_ = pure (ConE name)
 
  -- | 
  buildArgumentParser :: ArgumentSyntax -> Q Exp
@@ -150,11 +150,11 @@ buildParseI (Production (NonTerminal lhs) rhs) = do
   -- * make a new full-parser context (e.g. @contextual (parse def :: Parser Char Number)@) 
   -- 
   contextE :: Maybe Symbol -> Q Exp
-  contextE Nothing                          = return $ VarE contextN
+  contextE Nothing                          = pure (VarE contextN)
   contextE (Just (Part (Terminal token)))   = [e|  contextual $parserE  |] 
    where parserE = wordE token
   contextE (Just (Hole (NonTerminal name))) = [e|  contextual ( parse def :: $parserT )  |]
-   where parserT = [t|  Parser Char $(return (ConT name))  |]
+   where parserT = [t|  Parser Char $(pure (ConT name))  |]
 
   partsE_ = mapM wordE parts :: Q [Exp]
 

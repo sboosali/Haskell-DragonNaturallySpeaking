@@ -12,6 +12,7 @@ import Control.Lens
 import Language.Haskell.TH.Lift
 
 import Language.Haskell.TH
+import Control.Applicative (pure)
 
 
 -- | 
@@ -34,7 +35,7 @@ buildGrammarI g = do
  [d| instance Grammatical $(typ) where grammar $(pat) = $(exp) |]
 
  where
- typ = return (ConT name)
+ typ = pure (ConT name)
  pat = [p| _ |]
  exp = lift g
 
