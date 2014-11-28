@@ -76,88 +76,113 @@ buildParseI (Production (NonTerminal lhs) rhs) = do
 
  let typ = pure (ConT lhs)
  let pat = pure (VarP contextN)
- let exp = buildTypeParser rhs
+ let exp = buildTypeParser contextN rhs
 
  [d| instance Parse $(typ) where parse $(pat) = $(exp) |]
 
  where
-
  -- the argument to the built function
  contextN = mkName "context"
 
- -- | makes a word parser
- -- e.g. @wordE "with"@ -> @word "with"@
- -- "wordS, wordL" i.e. "String, Literal"
- wordE :: String -> Q Exp
- wordE wordS = [e|  word  $wordL  |]
-  where
-  wordL = pure ((LitE . StringL) wordS)
+-- |
+-- 
+-- (see the source): the compile-time @foldl1 ('|<|>|') syntax@ mirrors the run-time @foldl1 ('<|>') values@
+-- 
+-- 
+buildTypeParser :: Name -> NonEmpty Variant -> Q Exp
+buildTypeParser contextN rhs = do
+ constructorSyntaxes <- NonEmpty.mapM chunkArguments rhs
+ constructorsE       <- NonEmpty.mapM (buildConstructorParser contextN) constructorSyntaxes
+ let typeE           =  foldl1 (|<|>|) constructorsE
 
- -- | @foldl operator@ mimics applying left-associative @operator@s
- buildTypeParser :: NonEmpty Variant -> Q Exp
- buildTypeParser rhs = do
-  constructorSyntaxes <- NonEmpty.mapM chunkArguments         rhs
-  constructorsE       <- NonEmpty.mapM buildConstructorParser constructorSyntaxes
-  let typeE           =  foldl1 (|<|>|) constructorsE
+ return typeE
 
-  pure typeE
+ where
+ (|<|>|) = infixlE '(<|>)
 
-  where
-  (|<|>|) = infixlE '(<|>)
+-- | 
+-- 
+-- e.g. locals (see the source)
+--
+-- * @nameE@         is @pure ReplaceWith@
+-- * @partsE@        is @['word' "replace"]@
+-- * @constructorE@  is @(pure ReplaceWith <* 'word' "replace")@
+-- * @parserE@       is @[('parse' ... <* 'word' "with")), ('parse' ...)]@
+-- 
+-- 
+buildConstructorParser :: Name -> ConstructorSyntax -> Q Exp
+buildConstructorParser contextN (ConstructorSyntax name (map unTerminal -> parts) arguments) = do
 
- buildConstructorParser :: ConstructorSyntax -> Q Exp
- buildConstructorParser (ConstructorSyntax name (map unTerminal -> parts) arguments) = do
+ nameE            <- [e| pure $(nameE_) |]
+ partsE           <- mapM wordE parts
+ let constructorE =  foldl (|<*|) nameE partsE
 
-  nameE            <- [e| pure $(nameE_) |]              -- e.g. pure ReplaceWith
-  partsE           <- mapM wordE parts                   -- e.g. [word "replace"]
-  let constructorE =  foldl (|<*|) nameE partsE          -- e.g. (pure ReplaceWith <* word "replace")
+ argumentsE       <- mapM (buildArgumentParser contextN) arguments
+ let parserE      =  foldl (|<*>|) constructorE argumentsE
 
-  argumentsE       <- mapM buildArgumentParser arguments -- e.g. [(parse ... <* word "with")), (parse ...)]
-  let parserE      =  foldl (|<*>|) constructorE argumentsE
+ [e| try $(pure parserE) |]
 
-  [e| try $(pure parserE) |]
+ where
 
-  where
+ (|<*|), (|<*>|) :: Exp -> Exp -> Exp
+ (|<*|)  = infixlE '(<*)
+ (|<*>|) = infixlE '(<*>)
 
-  (|<*|), (|<*>|) :: Exp -> Exp -> Exp
-  (|<*|)  = infixlE '(<*)
-  (|<*>|) = infixlE '(<*>)
+ nameE_ = pure (ConE name)
 
-  nameE_ = pure (ConE name)
+-- | 
+-- 
+-- 
+-- to get the new context from old context, either:
+-- 
+-- * pass the old context on (i.e. @context@)
+-- * make a new word context (e.g. @contextual (word "click")@)
+-- * make a new full-parser context (e.g. @contextual (parse context :: Parser Char Number)@) 
+-- 
+buildArgumentParser :: Name -> ArgumentSyntax -> Q Exp
+buildArgumentParser contextN (ArgumentSyntax _ context (map unTerminal -> parts)) = do
+ parserE       <- parserE_
+ partsE        <- partsE_
+ let argumentE =  foldl (|<*|) parserE partsE
 
- -- | 
- buildArgumentParser :: ArgumentSyntax -> Q Exp
- buildArgumentParser (ArgumentSyntax _ context (map unTerminal -> parts)) = do
-  parserE       <- parserE_
-  partsE        <- partsE_
-  let argumentE =  foldl (|<*|) parserE partsE
+ return argumentE
 
-  return argumentE
+ where
 
-  where
+ -- operator binding
+ (|<*|) :: Exp -> Exp -> Exp
+ (|<*|) = infixlE '(<*)
 
-  -- operator binding
-  (|<*|) :: Exp -> Exp -> Exp
-  (|<*|) = infixlE '(<*)
+ partsE_ = mapM wordE parts :: Q [Exp]
 
-  parserE_ :: Q Exp
-  parserE_ = [e| parse $(contextE context) |]
+ parserE_ :: Q Exp
+ parserE_ = [e| parse $newContextE |]
 
-  -- | new context from old context, either:
-  -- 
-  -- * pass the old context on (i.e. @context@)
-  -- * make a new word context (e.g. @contextual (word "click")@)
-  -- * make a new full-parser context (e.g. @contextual (parse def :: Parser Char Number)@) 
-  -- 
-  contextE :: Maybe Symbol -> Q Exp
-  contextE Nothing                          = pure (VarE contextN)
-  contextE (Just (Part (Terminal token)))   = [e|  contextual $parserE  |] 
-   where parserE = wordE token
-  contextE (Just (Hole (NonTerminal name))) = [e|  contextual ( parse def :: $parserT )  |]
-   where parserT = [t|  Parser Char $(pure (ConT name))  |]
+ newContextE = contextE context
 
-  partsE_ = mapM wordE parts :: Q [Exp]
+ contextE :: Maybe Symbol -> Q Exp
+ contextE Nothing                          = oldContextE
+ contextE (Just (Part (Terminal token)))   = [e|  contextual $parserE  |] 
+  where parserE = wordE token
+ contextE (Just (Hole (NonTerminal name))) = [e|  contextual ( parse $oldContextE :: $parserT )  |] -- TODO pass down old context?
+  where parserT = [t|  Parser Char $(pure (ConT name))  |]
 
+ oldContextE = pure (VarE contextN)
+
+
+-- | makes a 'word' parser
+--
+-- e.g. @wordE "with"@ -> @word "with"@
+--
+-- naming of locals (see the source):
+--
+-- * @wordS@ as in String
+-- * @wordL@ as in Literal
+--
+wordE :: String -> Q Exp
+wordE wordS = [e|  word  $wordL  |]
+ where
+ wordL = pure ((LitE . StringL) wordS)
 
 -- | 
 --
