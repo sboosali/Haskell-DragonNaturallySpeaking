@@ -75,11 +75,13 @@ library
 
    Commands.Etc,
    Control.Monad.NonEmpty,
+   Commands.Text.Parsec,
+
+   Example.Types,
+   Example.Commands,
 
    Commands.Types,
 
-   Commands.Bits,
-   Commands.Instances,
    Commands.Munging,
 
    Commands.Generic,
@@ -95,17 +97,12 @@ library
    Commands.TH.Instance.Parse,
    Commands.TH.Instance.Grammar,
 
-   Commands.Text.Parsec,
-
    Commands.Rule.Types,
 
    Commands.Parse,
    Commands.Parse.Instances,
 
    Commands.Grammar,
-
-   Example.Types,
-   Example.Commands,
 
    Commands
 
