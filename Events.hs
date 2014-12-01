@@ -7,6 +7,7 @@ import Commands.OSX.Marshall
 import Data.BitVector
 
 import Control.Monad hiding (void)
+import Control.Concurrent (threadDelay)
 import Foreign.C.Types
 import Language.C.Quote.ObjC
 import Language.C.Inline.ObjC
@@ -95,17 +96,39 @@ key 'a' = AKey
 -- | 1000 characters
 thousand = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
+markWord = do
+ pressO $ Press [Option       ] LeftArrowKey
+ pressO $ Press [Option, Shift] RightArrowKey
+
+backWord = do
+ pressO $ Press [Option] LeftArrowKey
+
+forWord = do
+ pressO $ Press [Option] RightArrowKey
+
+delay = threadDelay $ 1000000
+
 
 objc_emit
 
 main =  do
  objc_initialise
--- currentApplicationPathO >>= print 
--- pressO $ Press [Command, Shift] AKey
 
- -- near no conscious latency
- replicateM_ 100 (currentApplicationPathO >>= print)
+ -- pressO $ Press [Command, Shift] AKey
 
- -- near no conscious latency
- mapM_ pressO $ insert thousand
+ -- -- near no conscious latency
+ -- replicateM_ 100 (currentApplicationPathO >>= print)
 
+ -- -- near no conscious latency
+ -- mapM_ pressO $ insert thousand
+
+ -- keyboard shortcuts don't need lag between each KeyPress (hence
+ -- 'replicateM_', without 'interleave $ delay 25000'). only
+ -- interaction needs lag (e.g. a mini-buffer pop-up).
+ -- tested in Chrome.
+ replicateM_ 5 delay
+ replicateM_ 10 forWord
+ delay
+ replicateM_ 10 backWord
+ delay
+ markWord
