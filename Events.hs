@@ -71,6 +71,9 @@ objc_implementation [] [cunit|
 
 -- |
 -- Haskell String ~ Objective-C NSString
+--
+-- @activeApplication@ versus @frontmostApplication@ versus @currentApplication@
+--
 currentApplicationPathO :: IO String
 currentApplicationPathO = $(objc [] $ [t|String|] <: [cexp|
  [[[NSWorkspace sharedWorkspace] activeApplication] objectForKey:@"NSApplicationPath"]
