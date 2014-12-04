@@ -95,12 +95,15 @@ library
    Commands.TH.Syntax,
    Commands.TH.Data,
    Commands.TH.Instance.Parse,
+   Commands.TH.Instance.Recognize,
    Commands.TH.Instance.Grammar,
 
    Commands.Rule.Types,
 
    Commands.Parse,
    Commands.Parse.Instances,
+
+   Commands.Recognize,
 
    Commands.Grammar,
 

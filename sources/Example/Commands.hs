@@ -1,5 +1,6 @@
 {-# LANGUAGE QuasiQuotes, TemplateHaskell #-}
 {-# LANGUAGE RankNTypes, ScopedTypeVariables #-}
+{-# LANGUAGE TypeSynonymInstances, MultiParamTypeClasses #-}
 module Example.Commands where
 import Commands.Etc
 import Commands.TH
@@ -7,14 +8,17 @@ import Commands.TH.Syntax
 import Commands.Generic
 import Commands.Text.Parsec
 import Commands.Parse
+import Commands.Recognize
 import Commands.Grammar
 
 import Control.Lens
 import qualified Text.Parsec as Parsec
 import Text.InterpolatedString.Perl6
 
+import Data.Tree
 import Control.Applicative hiding (many,(<|>))
 import Control.Exception
+import Language.Haskell.TH
 
 
 -- stubs
@@ -25,11 +29,20 @@ type Button = Number
 newtype Words = Words [String] deriving (Show,Eq)
 newtype Number = Number Integer deriving (Show,Eq)
 
+
 instance Parse Words where
  parse context = Words <$> anyWord `manyUntil` context
 
 instance Parse Number where
  parse _ = (Number . read) <$> (spaced $ Parsec.many1 Parsec.digit)
+
+
+instance Recognize NatLink Phrase where
+ recognize _ = Node (NatLink ''Phrase "<dgndictation>") []
+
+instance Recognize NatLink Number where
+ recognize _ = Node (NatLink ''Number "TODO") []
+
 
 grammarTight :: Possibly Production
 grammarTight = pProduction `parseThrow` [qq| data Command
@@ -56,17 +69,31 @@ Stub st'ub
 |]
 
 
+-- [rule| data Command
+-- ReplaceWith    replace Phrase with Phrase
+-- Click          Times Button click
+-- TypeSignature  has type Phrase
+-- Undo           undo |]
+
+
 [rule| data Command
-ReplaceWith    replace Phrase with Phrase
-Click          Times Button click
-TypeSignature  has type Phrase
+ReplaceWith    replace Words with Words
+Click          Number Number click
+TypeSignature  has type Words
 Undo           undo |]
+
 
 -- Undo           un'do |]
 -- reports error, with file's (not template's) line/column
 
 parseCommand :: String -> Possibly Command
 parseCommand = parseThrow (parse def)
+
+recognizeCommand :: String
+recognizeCommand = serializeNatLinkGrammar (recognize (undefined :: Command) :: Tree NatLink)
+
+ruleCommand :: Grammar
+ruleCommand = grammar (undefined :: Command)
 
 
 -- | tests:
@@ -86,10 +113,11 @@ parseCommand = parseThrow (parse def)
 --
 main :: IO ()
 main = do
+
  putStrLn ""
  print =<< grammarTight
  print =<< grammarLoose
- ((print =<< grammarWrong) `catch` (\ (e :: ParseError) -> print "CAUGHT" >> print e)) >> print "AFTER"
+ ((print =<< grammarWrong) `catch` (\ (e :: ParseError) -> putStrLn "CAUGHT ParseError..." >> print e))
 
  putStrLn ""
  print $ ReplaceWith (Words ["this", "and", "that"]) (Words ["that", "and", "this"])
@@ -104,15 +132,18 @@ main = do
  print =<< parseCommand "undo"
 
  putStrLn ""
- let grammar' = grammar (undefined :: Command)
- print grammar'
+ print ruleCommand
 
  putStrLn ""
- print $ grammar' ^.start
- print $ grammar' ^..terminals
- print $ grammar' ^..nonTerminals
+ print $ ruleCommand ^.start
+ print $ ruleCommand ^..terminals
+ print $ ruleCommand ^..nonTerminals
 
  putStrLn ""
- print $ getStart grammar'
- print $ getHoles grammar'
- print $ getParts grammar'
+ print $ getStart ruleCommand
+ print $ getHoles ruleCommand
+ print $ getParts ruleCommand
+
+ putStrLn ""
+ putStrLn recognizeCommand
+ putStrLn ""

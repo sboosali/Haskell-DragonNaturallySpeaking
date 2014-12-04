@@ -1,13 +1,13 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving, DeriveDataTypeable #-}
-{-# LANGUAGE RankNTypes #-}
 -- |
 --
 -- 'buildParseI' needs these 'Name's in templates:
 --
--- * import "Commands.Text.Parsec"  ('Parser','word')
 -- * import "Commands.Parse"        ('Parse','parse','contextual')
+-- * import "Commands.Text.Parsec"  ('Parser','word')
 -- * import "Commands.Generic"      ('Default','def')
 -- * import "Prelude"               ('Show','Eq')  
 --
@@ -49,7 +49,7 @@ data ArgumentSyntax    = ArgumentSyntax    NonTerminal (Maybe Symbol) [Terminal]
 -- >  Variant ''Undo         [Part "undo"]]
 -- 
 -- 'buildParseI' builds a 'Parse' @instance@ like:
---  
+--
 -- > instance Parse Command where
 -- >  parse context
 -- >   =    try ((pure ReplaceWith                                                <$ (word "replace"))

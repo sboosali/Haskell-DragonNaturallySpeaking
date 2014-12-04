@@ -42,7 +42,7 @@ parseThrow parser = eitherThrow . runParser parser () ""
 --
 parseTemplate :: Parser i o -> [i] -> Q o
 parseTemplate parser template = do
- Loc { loc_start = (line, column) } <- location
+ (line, column) <- currentLocation
  result <- withPosition (line, column) parser `parseThrow` template
  return result
 

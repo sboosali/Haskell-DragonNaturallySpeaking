@@ -11,8 +11,8 @@ import Commands.Grammar
 import Control.Lens
 import Language.Haskell.TH.Lift
 
-import Language.Haskell.TH
 import Control.Applicative (pure)
+import Language.Haskell.TH
 
 
 -- | 

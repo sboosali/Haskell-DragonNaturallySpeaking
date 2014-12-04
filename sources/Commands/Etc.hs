@@ -1,13 +1,20 @@
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE OverloadedLists, TypeFamilies #-}
+{-# LANGUAGE ExplicitForAll, ScopedTypeVariables #-}
 module Commands.Etc where
 
 import Safe
 import Control.Monad.Catch
 
+import Data.Map (Map)
+import qualified Data.Map as Map
+import Data.Tree (Tree(..))
+import Control.Applicative
 import Control.Monad
 import Control.Exception (throwIO) 
 import qualified Data.Set as Set
 import Language.Haskell.TH
+import GHC.Exts
 
 
 -- | transform from @Bool@, like @maybe@ or @either@
@@ -98,3 +105,42 @@ uniques l = go Set.empty l
                then     go s                xs
                else x : go (Set.insert x s) xs
 
+-- | implicitly search a graph, generating candidates from a function.
+--
+-- the internal cycle-breaking "Map" is lazy, as 'elems' are each
+-- possibly infinite, e.g. the graph is explicit and has direct recursion.
+--
+findOn :: forall a b. (Ord b) => (a -> b) -> (a -> [a]) -> a -> [a]
+findOn key       -- ^ the key on which to compare nodes for equality
+       next      -- ^ generates candidates i.e. the node's neighbors
+       input     -- ^ the node
+ = go [] [input]
+ where
+ go :: Map b a -> [a] -> [a]
+ go seen []    = Map.elems seen
+ go seen input = go (saw `Map.union` seen) frontier
+  where
+  saw       = Map.fromList $ map ((,) <$> key <*> id) unseen
+  frontier  = concatMap next unseen
+  unseen    = filter ((`Map.notMember` seen) . key) input
+
+-- | a "search" is one way to take a 'Tree'/graph to a list.
+--
+-- given Haskell's non-strictness, the @tree@ data structure
+-- is equivalent to the @search@ computation.
+--
+searchGraph :: (Ord a) => Tree a -> [a]
+searchGraph = map rootLabel . findOn rootLabel subForest
+
+-- | idky this instance isn't in "GHC.Exts"
+instance (Ord k) => IsList (Map k v) where
+  type Item (Map k v) = (k,v)
+  fromList = Map.fromList
+  toList   = Map.toList
+
+-- | the line/column number of the currently pending splice
+--
+currentLocation :: Q (Int,Int)
+currentLocation = do
+ Loc { loc_start = (line, column) } <- location
+ return (line, column)
