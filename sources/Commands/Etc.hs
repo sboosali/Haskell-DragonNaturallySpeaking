@@ -110,10 +110,12 @@ uniques l = go Set.empty l
 -- the internal cycle-breaking "Map" is lazy, as 'elems' are each
 -- possibly infinite, e.g. the graph is explicit and has direct recursion.
 --
-findOn :: forall a b. (Ord b) => (a -> b) -> (a -> [a]) -> a -> [a]
-findOn key       -- ^ the key on which to compare nodes for equality
-       next      -- ^ generates candidates i.e. the node's neighbors
-       input     -- ^ the node
+findOn :: forall a b. (Ord b)
+ => (a -> b)       -- ^ the key on which to compare nodes for equality
+ -> (a -> [a])     -- ^ generates candidates i.e. the node's neighbors
+ -> a              -- ^ the node
+ -> [a]
+findOn key next input
  = go [] [input]
  where
  go :: Map b a -> [a] -> [a]

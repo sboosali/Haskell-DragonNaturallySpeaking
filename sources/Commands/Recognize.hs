@@ -42,8 +42,8 @@ data NatLink = NatLink Name String
  deriving (Show,Eq,Ord)
 
 
--- | outputs a valid @NatLink.GrammarBase.gramSpec@, in NatLink's BNF-like format.
--- see @NatLink/MacroSystem/core/gramparser.py@ once you get the NatLink source.
+-- | outputs a valid (Python string) @natlink.GrammarBase.gramSpec@, in NatLink's BNF-like format.
+-- see @<./NatLink/MacroSystem/core/gramparser.py>@ once you get the NatLink source.
 --
 -- the NatLink grammar specification is included verbatim below:
 --
@@ -68,8 +68,8 @@ data NatLink = NatLink Name String
 --
 --
 -- import all builtin NatLink rules, in case a user wants to use them.
--- without having to hack a 'Recognize' instance by putting new lines
--- in the String etc.
+-- (e.g. without having to hack a 'Recognize' instance by putting
+-- new lines in the right-hand side String etc.)
 --
 -- serializes a directly recursive graph representation of a
 -- 'NatLink' grammar into an "indirectly recursive" 'String'.
@@ -77,7 +77,8 @@ data NatLink = NatLink Name String
 --
 -- given the input:
 --
--- > Node (NatLink ''Command "<Commands__Spiros__Phrase> | ...;") [recognize (undefined :: Commands.Rule.Phrase), ...]
+-- > Node (NatLink ''Command "<Commands__Spiros__Phrase> | ...;")
+-- >      [recognize (undefined :: Commands.Rule.Phrase), ...]
 --
 -- and the 'Recognize' instance:
 --
@@ -88,23 +89,16 @@ data NatLink = NatLink Name String
 --
 -- > "
 -- > <dgndictation> imported;
+-- >  ... imported;
 -- > <Command> exported = <Phrase> | ...;
 -- > <Phrase> = <dgndictation>;
 -- > "
 --
 -- only the 'rootLabel' is @"exported"@.
 --
--- the left-hand sides are unique, unless you violate Haskell style
--- in naming your modules/types. i.e. do not put "_" in in a module
--- such that it conflicts, and don't camel case variables such that
--- they conflict, with other modules, when reduced with
--- 'nameQualified_'.
---
--- e.g. @A_B.C@ and @A.B_C@ and @A.B.C@. all perversely reducing to
--- @"A_B_C"@.
---
--- implicit dependency: see "Commands.TH.Syntax.pCid". which returns
--- alphabetic-only identifiers, by construction.
+-- the left-hand sides are unique, given alphabetic identifiers. which
+-- 'Commands.TH.Syntax.pCid' returns, by construction.
+-- (an implicit dependency)
 --
 serializeNatLinkGrammar :: Tree NatLink -> String
 serializeNatLinkGrammar graph = intercalate "\n" (preludeNatLink ++ serialize nodes)
@@ -115,9 +109,9 @@ serializeNatLinkGrammar graph = intercalate "\n" (preludeNatLink ++ serialize no
 
 -- | all builtin NatLink rules that can be @imported@, afaik. namely:
 --
--- * @<dgndictation>@ = repeated dictation words
--- * @<dgnletters>@   = repeated spelling letters
--- * @<dgnwords>@     = set of all dictation words
+-- * @\<dgndictation\>@ = repeated dictation words
+-- * @\<dgnletters\>@   = repeated spelling letters
+-- * @\<dgnwords\>@     = set of all dictation words
 --
 preludeNatLink :: [String]
 preludeNatLink = ["<dgndictation> imported;", "<dgnletters> imported;", "<dgnwords> imported;"]
