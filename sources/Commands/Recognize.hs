@@ -42,8 +42,38 @@ data NatLink = NatLink Name String
  deriving (Show,Eq,Ord)
 
 
--- | serializes a directly recursive graph representation of a
+-- | outputs a valid @NatLink.GrammarBase.gramSpec@, in NatLink's BNF-like format.
+-- see @NatLink/MacroSystem/core/gramparser.py@ once you get the NatLink source.
+--
+-- the NatLink grammar specification is included verbatim below:
+--
+-- >   Rule Definition:
+-- >       <RuleName> imported ;
+-- >       <RuleName> = Expression ;
+-- >       <RuleName> exported = Expression ;
+-- >
+-- >   A rule needs the keyword "exported" in order to be activated or visible
+-- >   to other grammars for importing.
+-- >
+-- >   Expression:
+-- >       <RuleName>                  // no spaces
+-- >       {ListName}                  // no spaces
+-- >       Word
+-- >       "Word"                      // with spaces
+-- >       ( Expression )
+-- >       [ Expression ]              // optional
+-- >       Expression +                // repeat
+-- >       Expression Expression       // sequence
+-- >       Expression | Expression     // alternative
+--
+--
+-- import all builtin NatLink rules, in case a user wants to use them.
+-- without having to hack a 'Recognize' instance by putting new lines
+-- in the String etc.
+--
+-- serializes a directly recursive graph representation of a
 -- 'NatLink' grammar into an "indirectly recursive" 'String'.
+--
 --
 -- given the input:
 --
@@ -57,8 +87,9 @@ data NatLink = NatLink Name String
 -- it serializes it into:
 --
 -- > "
--- > <Main_Command> exported = <Commands_Spiros_Phrase> | ...;
--- > <Commands_Spiros_Phrase> = <dgndictation>;
+-- > <dgndictation> imported;
+-- > <Command> exported = <Phrase> | ...;
+-- > <Phrase> = <dgndictation>;
 -- > "
 --
 -- only the 'rootLabel' is @"exported"@.
@@ -76,10 +107,20 @@ data NatLink = NatLink Name String
 -- alphabetic-only identifiers, by construction.
 --
 serializeNatLinkGrammar :: Tree NatLink -> String
-serializeNatLinkGrammar graph = intercalate "\n" $ serialize $ searchGraph graph
+serializeNatLinkGrammar graph = intercalate "\n" (preludeNatLink ++ serialize nodes)
  where
+ nodes = searchGraph graph
  serialize []             = []  -- TODO
  serialize (label:labels) = serializeNatLinkExport label : map serializeNatLinkRule labels
+
+-- | all builtin NatLink rules that can be @imported@, afaik. namely:
+--
+-- * @<dgndictation>@ = repeated dictation words
+-- * @<dgnletters>@   = repeated spelling letters
+-- * @<dgnwords>@     = set of all dictation words
+--
+preludeNatLink :: [String]
+preludeNatLink = ["<dgndictation> imported;", "<dgnletters> imported;", "<dgnwords> imported;"]
 
 -- |
 --
