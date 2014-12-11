@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
-{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE ViewPatterns, NamedFieldPuns #-}
 -- | 
 -- "Commands.TH.Data" builds a @[d| data ... |]@
 -- 
@@ -43,13 +43,13 @@ rule = QuasiQuoter
 -- 
 buildRule :: String -> Q [Dec]
 buildRule template = do
- grammar           <- pGrammar `parseTemplate` template
- let productions'  = toList (grammar^.productions)
+ grammar <- pGrammar `parseTemplate` template
+ let Grammar (toList -> rules) = grammar
 
- let datatypes       = buildDataD <$> productions'
- parseInstances     <- concatMapM buildParseI productions'
- recognizeInstances <- concatMapM buildRecognizeNatLinkI productions'
- grammarInstance    <- buildGrammarI grammar
+ let datatypes       = map        buildDataD             rules
+ parseInstances     <- concatMapM buildParseI            rules
+ recognizeInstances <- concatMapM buildRecognizeNatLinkI rules
+ ruleInstance       <-            buildGrammarI          grammar
 
- return (datatypes ++ parseInstances ++ recognizeInstances ++ grammarInstance)
+ return (datatypes ++ parseInstances ++ recognizeInstances ++ ruleInstance)
 

@@ -15,7 +15,7 @@ import Language.Haskell.TH (Name)
 
 
 -- | 
-class Grammatical a where
+class Rule a where
  grammar :: a -> Grammar
 
 

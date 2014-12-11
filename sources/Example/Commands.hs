@@ -86,14 +86,14 @@ Undo           undo |]
 -- Undo           un'do |]
 -- reports error, with file's (not template's) line/column
 
-parseCommand :: String -> Possibly Command
-parseCommand = parseThrow (parse def)
+parse_Command :: String -> Possibly Command
+parse_Command = parseThrow (parse def)
 
-recognizeCommand :: String
-recognizeCommand = serializeNatLinkGrammar (recognize (undefined :: Command) :: Tree NatLink)
+recognize_Command :: String
+recognize_Command = serializeNatLinkGrammar (recognize (undefined :: Command) :: Tree NatLink)
 
-ruleCommand :: Grammar
-ruleCommand = grammar (undefined :: Command)
+rule_Command :: Grammar
+rule_Command = grammar (undefined :: Command)
 
 
 -- | tests:
@@ -126,24 +126,24 @@ main = do
  print $ Undo
 
  putStrLn ""
- print =<< parseCommand "replace this and that with that and this"
- print =<< parseCommand "1 2 click"
- print =<< parseCommand "has type maybe a"
- print =<< parseCommand "undo"
+ print =<< parse_Command "replace this and that with that and this"
+ print =<< parse_Command "1 2 click"
+ print =<< parse_Command "has type maybe a"
+ print =<< parse_Command "undo"
 
  putStrLn ""
- print ruleCommand
+ print rule_Command
 
  putStrLn ""
- print $ ruleCommand ^.start
- print $ ruleCommand ^..terminals
- print $ ruleCommand ^..nonTerminals
+ print $ rule_Command ^.start
+ print $ rule_Command ^..terminals
+ print $ rule_Command ^..nonTerminals
 
  putStrLn ""
- print $ getStart ruleCommand
- print $ getHoles ruleCommand
- print $ getParts ruleCommand
+ print $ getStart rule_Command
+ print $ getHoles rule_Command
+ print $ getParts rule_Command
 
  putStrLn ""
- putStrLn recognizeCommand
+ putStrLn recognize_Command
  putStrLn ""

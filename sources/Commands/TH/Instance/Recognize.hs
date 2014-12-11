@@ -54,7 +54,7 @@ buildRecognizeNatLinkI :: Production -> Q [Dec]
 buildRecognizeNatLinkI (Production (NonTerminal name) variants) = do
 
  let typ = pure (ConT name)
- let pat = [p| _ |]
+ let pat = pure WildP
  let exp = [e| Node (NatLink $(nameE) $(bodyE)) $(childrenE) |]
 
  [d| instance Recognize NatLink $(typ) where recognize $(pat) = $(exp) |]

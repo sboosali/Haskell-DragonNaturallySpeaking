@@ -3,7 +3,7 @@
 --
 -- 'buildGrammarI' needs these 'Name's in templates:
 --
--- * import "Commands.Grammar" (Grammatical, grammar)
+-- * import "Commands.Grammar" (Rule, grammar)
 --
 module Commands.TH.Instance.Grammar where
 import Commands.Grammar
@@ -32,11 +32,11 @@ import Language.Haskell.TH
 -- 
 buildGrammarI :: Grammar -> Q [Dec]
 buildGrammarI g = do
- [d| instance Grammatical $(typ) where grammar $(pat) = $(exp) |]
+ [d| instance Rule $(typ) where grammar $(pat) = $(exp) |]
 
  where
  typ = pure (ConT name)
- pat = [p| _ |]
+ pat = pure WildP
  exp = lift g
 
  NonTerminal name = g^.start
