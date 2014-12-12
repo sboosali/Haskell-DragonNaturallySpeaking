@@ -1,6 +1,10 @@
 module Main where
 import qualified Events
+import qualified Example
+
 import Data.BitVector
 
 
-main = Events.main
+main = do
+ Example.main
+ Events.main

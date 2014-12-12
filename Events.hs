@@ -117,7 +117,7 @@ objc_emit
 main =  do
  objc_initialise
 
- -- pressO $ Press [Command, Shift] AKey
+ pressO $ Press [Command, Shift] AKey
 
  -- -- near no conscious latency
  -- replicateM_ 100 (currentApplicationPathO >>= print)
@@ -125,13 +125,14 @@ main =  do
  -- -- near no conscious latency
  -- mapM_ pressO $ insert thousand
 
- -- keyboard shortcuts don't need lag between each KeyPress (hence
- -- 'replicateM_', without 'interleave $ delay 25000'). only
- -- interaction needs lag (e.g. a mini-buffer pop-up).
- -- tested in Chrome.
- replicateM_ 5 delay
- replicateM_ 10 forWord
- delay
- replicateM_ 10 backWord
- delay
- markWord
+ -- -- keyboard shortcuts don't need lag between each KeyPress (hence
+ -- -- 'replicateM_', without 'interleave $ delay 25000'). only
+ -- -- interaction needs lag (e.g. a mini-buffer pop-up).
+ -- -- tested in Chrome.
+ -- replicateM_ 5 delay
+ -- replicateM_ 10 forWord
+ -- delay
+ -- replicateM_ 10 backWord
+ -- delay
+ -- markWord
+

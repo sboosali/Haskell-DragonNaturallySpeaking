@@ -26,7 +26,7 @@ run: Main
 
 # "$@" is the output variable i.e. target file i.e. object file e.g. "Main"
 # "$^" are the space-separated input variables i.e. prerequisites i.e. dependency files i.e. source files
-Main: Events.o Events_objc.o Main.o
+Main: Events.o Events_objc.o Example.o Main.o
 	$(HC) $(LDFLAGS)  -o $@  $^
 
 # "%" is a wildcard
@@ -35,6 +35,10 @@ Events.o: Events.hs dist/build
 	$(HC) $(HCFLAGS)  -c $<
 
 Events_objc.m: Events.o
+
+# pure-Haskell module
+Example.o: Example.hs
+	$(HC) $(HCFLAGS)  -c $<
 
 # module "Main" must have package "main" 
 # Main imports Events

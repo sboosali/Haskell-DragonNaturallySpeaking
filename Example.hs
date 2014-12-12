@@ -1,7 +1,7 @@
 {-# LANGUAGE QuasiQuotes, TemplateHaskell #-}
 {-# LANGUAGE RankNTypes, ScopedTypeVariables #-}
 {-# LANGUAGE TypeSynonymInstances, MultiParamTypeClasses #-}
-module Example.Commands where
+module Example where
 import Commands.Etc
 import Commands.TH
 import Commands.TH.Syntax
@@ -19,6 +19,8 @@ import Data.Tree
 import Control.Applicative hiding (many,(<|>))
 import Control.Exception
 import Language.Haskell.TH
+
+{-# ANN module "HLint: ignore Use camelCase" #-}
 
 
 -- stubs
@@ -107,7 +109,7 @@ rule_Command = grammar (undefined :: Command)
 -- * suffix operator and prefix operator
 -- * single word
 -- 
--- $ cabal build && cabal exec runhaskell sources/Example/Commands.hs
+-- $ cabal build && cabal exec runhaskell Example.hs
 --
 -- $ cabal exec -- ghc  -outputdir ignore/ignore  -ddump-splices  sources/Example/Commands.hs
 --
@@ -146,4 +148,5 @@ main = do
 
  putStrLn ""
  putStrLn recognize_Command
+
  putStrLn ""

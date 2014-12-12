@@ -77,9 +77,6 @@ library
    Control.Monad.NonEmpty,
    Commands.Text.Parsec,
 
-   Example.Types,
-   Example.Commands,
-
    Commands.Types,
 
    Commands.Munging,
