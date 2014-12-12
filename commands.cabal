@@ -34,21 +34,30 @@ name: commands
 version: 0.0.0
 
 -- a short description, shows up in the search result from hackage
-synopsis:
--- a longer description
+synopsis: voice control your computer, writing commands in Haskell.
+category: Voice Control, Speech Recognition, Parsing
+
 description:
+ A server that listens for natural language commands, @parse@s them into @Rule@s, @compile@s the @Rule@s into @Action@s, and executes those @Action@s.
+ .
+ e.g. DragonNaturallySpeaking bindings (in a Windows VM) send @"replace this with that"@ to an HTTP server (on OSX), which is parsed into @ReplaceWith "this" "that"@, which is compiled to @press [command] r <> type "this" <> press [] enter <> type "that"@ in the context of the application @Emacs@, which is executed by Objective-C bindings. and you just replaced some text with your voice!
+ .
+ Template Haskell can automatically generate context-sensitive parsers for rules:
+ .
+ .
 
-homepage: https://github.com/sboosali/Haskell-DragonNaturallySpeaking
-
-license: GPL-3
-license-file: LICENSE
-
-author: Sam Boosalis
+author:     Sam Boosalis
 maintainer: samboosalis@gmail.com
 
-category:
+homepage:    https://github.com/sboosali/Haskell-DragonNaturallySpeaking/blob/master/README.md
+bug-reports: https://github.com/sboosali/Haskell-DragonNaturallySpeaking/issues
+
+copyright:    Copyright (C) 2014 Sam M. Boosalis
+license:      GPL-3
+license-file: LICENSE
 
 build-type: Simple
+stability:  experimental
 
 -- extra files to be distributed with the package
 extra-source-files:
@@ -63,6 +72,11 @@ data-files:
 
 -- constraint on the version of Cabal needed to build this package
 cabal-version:       >=1.10
+
+
+source-repository head
+  type:     git
+  location: https://github.com/sboosali/Haskell-DragonNaturallySpeaking
 
 
 library
@@ -147,6 +161,7 @@ library
    template-haskell,
    base ==4.7.*
 
+
 test-suite tests
   main-is:        Tests.hs
   hs-source-dirs: tests
@@ -166,4 +181,5 @@ test-suite tests
    test-framework-th,
 
    base ==4.7.*
+
 
