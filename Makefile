@@ -1,11 +1,15 @@
 PACKAGE = commands
 VERSION = 0.0.0
 
+MODULES    = Example.hs Native.hs
+OBJECTS    = Example.o Native.o
+DEPENDS    = $(shell ./dependencies.sh commands criterion)
+
 HC         = cabal exec -- ghc
 LIBDIR     = $(shell $(HC) --print-libdir)
-CFLAGS     = -fobjc-arc -I$(LIBDIR)/include -I$(LIBDIR)/../../includes
-HCFLAGS    = -v 
-PACKAGES   = -package template-haskell -package language-c-quote -package language-c-inline -package bv -package commands
+CFLAGS     = -v -fobjc-arc  -I$(LIBDIR)/include -I$(LIBDIR)/../../includes
+HCFLAGS    = -v  -O2
+PACKAGES   = -package commands -package template-haskell -package language-c-quote -package language-c-inline -package bv -package criterion -package deepseq-generics $(DEPENDS)
 FRAMEWORKS = -framework Carbon -framework Cocoa -framework Foundation
 LDFLAGS    = -optl-ObjC $(PACKAGES) $(FRAMEWORKS)
 
@@ -26,24 +30,25 @@ run: Main
 
 # "$@" is the output variable i.e. target file i.e. object file e.g. "Main"
 # "$^" are the space-separated input variables i.e. prerequisites i.e. dependency files i.e. source files
-Main: Events.o Events_objc.o Example.o Main.o
-	$(HC) $(LDFLAGS)  -o $@  $^
+Main: Main.o Events.o Events_objc.o $(OBJECTS)
+	$(HC) $(HCFLAGS) $(LDFLAGS)  -o $@  $^
 
 # "%" is a wildcard
 # "$<" is the first input variable i.e. prerequisite e.g. "%.hs"
-Events.o: Events.hs dist/build
+Events.o: Events.hs dist/build $(OBJECTS)
 	$(HC) $(HCFLAGS)  -c $<
 
 Events_objc.m: Events.o
-
-# pure-Haskell module
-Example.o: Example.hs
-	$(HC) $(HCFLAGS)  -c $<
 
 # module "Main" must have package "main" 
 # Main imports Events
 Main.o: Main.hs Events.o
 	$(HC) $(HCFLAGS)  -c $<
+
+# pure-Haskell ("native" versus "foreign") modules
+$(OBJECTS): $(MODULES)
+	$(HC) $(HCFLAGS)  --make $^
+
 
 
 # # # # # # # # # # # # # # # # # # 
@@ -78,7 +83,7 @@ check:
 default: Haskell
 
 clean:
-	rm -f *.o *.hi *_objc.[hm] Main
+	rm -f Main *_objc.[hmo] {Main,Events}.{o,hi} *.{o,hi,dyn_o,dyn_hi} *.exe
 	rm -f main
 
 fresh: clean

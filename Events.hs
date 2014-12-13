@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes, DeriveDataTypeable, ViewPatterns #-}
 module Events where
+import Native
 import Commands
 import Commands.Types
 import Commands.OSX.Marshall
@@ -117,7 +118,7 @@ objc_emit
 main =  do
  objc_initialise
 
- pressO $ Press [Command, Shift] AKey
+ --  pressO $ Press [Command, Shift] AKey
 
  -- -- near no conscious latency
  -- replicateM_ 100 (currentApplicationPathO >>= print)
@@ -135,4 +136,10 @@ main =  do
  -- replicateM_ 10 backWord
  -- delay
  -- markWord
+
+ -- about 750 µs
+ benchmark "currentApplicationPathO" currentApplicationPathO
+
+ -- about 1 ms
+ benchmark "pressO" (pressO $ Press [] AKey)
 

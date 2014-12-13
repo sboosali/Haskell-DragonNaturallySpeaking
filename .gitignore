@@ -4,6 +4,7 @@ ignore/
 notes
 A.hs
 B.hs
+C.hs
 
 # Haskell
 dist
