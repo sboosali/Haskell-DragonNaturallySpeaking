@@ -154,6 +154,9 @@ library
    exceptions,
    th-lift,
 
+   criterion,
+   deepseq-generics,
+
    language-c-quote,
    language-c-inline,
 

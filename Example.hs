@@ -1,6 +1,7 @@
 {-# LANGUAGE QuasiQuotes, TemplateHaskell #-}
 {-# LANGUAGE RankNTypes, ScopedTypeVariables #-}
 {-# LANGUAGE TypeSynonymInstances, MultiParamTypeClasses #-}
+{-# LANGUAGE DeriveGeneric, StandaloneDeriving #-}
 module Example where
 import Commands.Etc
 import Commands.TH
@@ -14,11 +15,15 @@ import Commands.Grammar
 import Control.Lens
 import qualified Text.Parsec as Parsec
 import Text.InterpolatedString.Perl6
+import Criterion.Main
+import Control.DeepSeq.Generics (genericRnf)
 
 import Data.Tree
 import Control.Applicative hiding (many,(<|>))
 import Control.Exception
+import Control.DeepSeq
 import Language.Haskell.TH
+import GHC.Generics
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
@@ -83,10 +88,19 @@ ReplaceWith    replace Words with Words
 Click          Number Number click
 TypeSignature  has type Words
 Undo           undo |]
-
-
 -- Undo           un'do |]
 -- reports error, with file's (not template's) line/column
+
+
+deriving instance Generic Command
+instance NFData Command where rnf = genericRnf
+
+deriving instance Generic Words
+instance NFData Words where rnf = genericRnf
+
+deriving instance Generic Number
+instance NFData Number where rnf = genericRnf
+
 
 parse_Command :: String -> Possibly Command
 parse_Command = parseThrow (parse def)
@@ -111,7 +125,7 @@ rule_Command = grammar (undefined :: Command)
 -- 
 -- $ cabal build && cabal exec runhaskell Example.hs
 --
--- $ cabal exec -- ghc  -outputdir ignore/ignore  -ddump-splices  sources/Example/Commands.hs
+-- $ cabal exec -- ghc  -outputdir ignore/ignore  -ddump-splices  Example.hs
 --
 main :: IO ()
 main = do
@@ -148,5 +162,13 @@ main = do
 
  putStrLn ""
  putStrLn recognize_Command
+
+ putStrLn ""
+ let text = "replace this and that with that and this"
+ let parse_SPECIALIZED = parse_Command :: String -> Maybe Command
+ let message = [qq| parse "{text}" |]
+ defaultMain
+  [ bench message $ nf parse_SPECIALIZED text
+  ]
 
  putStrLn ""

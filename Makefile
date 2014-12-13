@@ -18,8 +18,8 @@ CODE = sources tests
 Haskell: install run
 
 install:
-	find . | grep \.hi$ | grep commands # (debugging)
-	cabal build # reinstalls commands package with "cabal install commands"
+#	find . | grep \.hi$ | grep commands # (debugging)
+	cabal build commands # reinstalls commands package with "cabal install commands"
 
 run: Main
 	./Main
