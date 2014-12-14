@@ -33,9 +33,23 @@ run: Main
 Main: Main.o Events.o Events_objc.o $(OBJECTS)
 	$(HC) $(HCFLAGS) $(LDFLAGS)  -o $@  $^
 
-# "%" is a wildcard
+# "%" is a wildcard (i.e. match any) like "*"
 # "$<" is the first input variable i.e. prerequisite e.g. "%.hs"
-Events.o: Events.hs dist/build $(OBJECTS)
+#
+# "prerequisites (to the left) | order-only prerequisites (to the right)"
+# an "order-only prerequisite" means:
+# * run the prerequisite's recipe before this target, if the prerequisite doesn't exist
+# * don't run the prerequisite's recipe if the prerequisite changes
+# 
+# directories are "different" whenever any file in the directory is:
+# * added
+# * removed
+#
+# an order-only directory prerequisite means:
+# * only make the directory's recipe if it doesn't exist
+# * ignoring whether or not the files in the directory have changed
+#
+Events.o: Events.hs $(OBJECTS) | dist/build
 	$(HC) $(HCFLAGS)  -c $<
 
 Events_objc.m: Events.o
@@ -49,6 +63,9 @@ Main.o: Main.hs Events.o
 $(OBJECTS): $(MODULES)
 	$(HC) $(HCFLAGS)  --make $^
 
+
+dist/build:
+	cabal build commands
 
 
 # # # # # # # # # # # # # # # # # # 
