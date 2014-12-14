@@ -16,18 +16,16 @@ import Commands.Etc
 import Commands.TH.Syntax
 import Commands.Text.Parsec
 import Commands.Parse
-import Commands.Generic
 import Commands.Grammar
 
 import Data.List.NonEmpty (NonEmpty(..),toList)
-import qualified Data.List.NonEmpty     as NonEmpty
 import qualified Control.Monad.NonEmpty as NonEmpty
 
-import Prelude (Show,show,Char,String,($),(.),map)
+import Prelude (Show,show,Char,String,(.),map)
 import Control.Monad
 import Control.Applicative hiding (many,(<|>))
 import Data.Maybe
-import Data.Foldable (foldl,foldr,foldl1,foldr1)
+import Data.Foldable (foldl,foldl1)
 import Language.Haskell.TH
 
 
@@ -74,11 +72,11 @@ data ArgumentSyntax    = ArgumentSyntax    NonTerminal (Maybe Symbol) [Terminal]
 buildParseI :: Production -> Q [Dec]
 buildParseI (Production (NonTerminal lhs) rhs) = do
 
- let typ = pure (ConT lhs)
- let pat = pure (VarP contextN)
- let exp = buildTypeParser contextN rhs
+ let typ  = pure (ConT lhs)
+ let _pat = pure (VarP contextN) -- "_..." suppresses unused-binds let pat = pure
+ let exp  = buildTypeParser contextN rhs
 
- [d| instance Parse $(typ) where parse $(pat) = $(exp) |]
+ [d| instance Parse $(typ) where parse $(_pat) = $(exp) |]
 
  where
  -- the argument to the built function

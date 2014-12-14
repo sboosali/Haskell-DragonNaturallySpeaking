@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Commands.Parse.Instances where
 import Commands.Parse
 import Commands.Text.Parsec

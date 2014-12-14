@@ -87,36 +87,37 @@ library
   -- modules exported by the library
   exposed-modules:
 
-   Commands.Etc,
-   Control.Monad.NonEmpty,
-   Commands.Text.Parsec,
+   Commands.Etc
+   Commands.Instances
+   Control.Monad.NonEmpty
+   Commands.Text.Parsec
 
-   Commands.Types,
+   Commands.Types
 
-   Commands.Munging,
+   Commands.Munging
 
-   Commands.Generic,
-   Commands.Generic.Instances,
+   Commands.Generic
+   Commands.Generic.Instances
 
-   Commands.OSX.Constants,
-   Commands.OSX.Bridge,
-   Commands.OSX.Marshall,
+   Commands.OSX.Constants
+   Commands.OSX.Bridge
+   Commands.OSX.Marshall
 
-   Commands.TH,
-   Commands.TH.Syntax,
-   Commands.TH.Data,
-   Commands.TH.Instance.Parse,
-   Commands.TH.Instance.Recognize,
-   Commands.TH.Instance.Grammar,
+   Commands.TH
+   Commands.TH.Syntax
+   Commands.TH.Data
+   Commands.TH.Instance.Parse
+   Commands.TH.Instance.Recognize
+   Commands.TH.Instance.Grammar
 
-   Commands.Rule.Types,
+   Commands.Rule.Types
 
-   Commands.Parse,
-   Commands.Parse.Instances,
+   Commands.Parse
+   Commands.Parse.Instances
 
-   Commands.Recognize,
+   Commands.Recognize
 
-   Commands.Grammar,
+   Commands.Grammar
 
    Commands
 
@@ -160,8 +161,9 @@ library
 
   ghc-options:
    -Wall
+  -- -fwarn-overlapping-patterns, -fwarn-warnings-deprecations, -fwarn-deprecated-flags, -fwarn-duplicate-exports, -fwarn-missing-fields, -fwarn-missing-methods, -fwarn-lazy-unlifted-bindings, -fwarn-wrong-do-bind, -fwarn-dodgy-foreign-imports
 
-   -fwarn-incomplete-patterns
+  -- enumerate -Wall to support module-by-module overriding with {-# OPTIONS_GHC -fno-warn-orphan-instances #-} |   -fwarn-incomplete-patterns
    -fwarn-incomplete-uni-patterns
 
    -fno-warn-name-shadowing

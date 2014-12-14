@@ -32,11 +32,11 @@ import Language.Haskell.TH
 -- 
 buildGrammarI :: Grammar -> Q [Dec]
 buildGrammarI g = do
- [d| instance Rule $(typ) where grammar $(pat) = $(exp) |]
+ [d| instance Rule $(typ) where grammar $(_pat) = $(exp) |]
 
  where
- typ = pure (ConT name)
- pat = pure WildP
- exp = lift g
+ typ  = pure (ConT name)
+ _pat = pure WildP -- "_..." suppresses unused-binds
+ exp  = lift g
 
  NonTerminal name = g^.start

@@ -12,14 +12,12 @@ module Commands.TH.Instance.Recognize where
 import Commands.Etc
 import Commands.Recognize
 import Commands.Grammar
-import Commands.TH.Syntax
 
 import Control.Lens
 import Data.Data.Lens
-import Data.List.NonEmpty (NonEmpty(..),toList)
+import Data.List.NonEmpty (toList)
 import Data.List (intercalate)
 import Language.Haskell.TH.Lift
-import Text.InterpolatedString.Perl6
 
 import Control.Applicative
 import Control.Category ((>>>))
@@ -53,11 +51,11 @@ import Language.Haskell.TH
 buildRecognizeNatLinkI :: Production -> Q [Dec]
 buildRecognizeNatLinkI (Production (NonTerminal name) variants) = do
 
- let typ = pure (ConT name)
- let pat = pure WildP
- let exp = [e| Node (NatLink $(nameE) $(bodyE)) $(childrenE) |]
+ let typ  = pure (ConT name)
+ let _pat = pure WildP -- "_..." suppresses unused-binds
+ let exp  = [e| Node (NatLink $(nameE) $(bodyE)) $(childrenE) |]
 
- [d| instance Recognize NatLink $(typ) where recognize $(pat) = $(exp) |]
+ [d| instance Recognize NatLink $(typ) where recognize $(_pat) = $(exp) |]
 
  where
  nameE     = lift name

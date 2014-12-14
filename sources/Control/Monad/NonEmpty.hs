@@ -1,11 +1,13 @@
--- | usage: @import qualified Control.Monad.NonEmpty as NonEmpty@
+-- | extends the @Data.List.NonEmpty@
+--
+-- usage: @import qualified Control.Monad.NonEmpty as NonEmpty@
 module Control.Monad.NonEmpty where
 
 import Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.List.NonEmpty as NonEmpty
 
-import Prelude       hiding (sequence,mapM)
-import Control.Monad hiding (sequence,mapM)
+import Prelude ((.))
+import Control.Monad (Monad)
 import qualified Control.Monad as Monad
 
 -- | like 'Monad.sequence'

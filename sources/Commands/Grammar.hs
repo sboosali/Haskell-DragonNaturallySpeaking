@@ -1,11 +1,11 @@
 {-# LANGUAGE DeriveDataTypeable, TemplateHaskell #-}
 module Commands.Grammar where
 import Commands.Etc
+import Commands.Instances() 
 
 import Control.Lens
-import Control.Lens.Each
 import Data.Data.Lens
-import Data.List.NonEmpty (NonEmpty(..),toList,head)
+import Data.List.NonEmpty (NonEmpty(..),head)
 import Language.Haskell.TH.Lift
 
 import Prelude hiding (head)
@@ -62,9 +62,8 @@ newtype NonTerminal = NonTerminal { unNonTerminal :: Name }
 -- splice must follow declarations
 $(concatMapM makeLenses [''Grammar, ''Production, ''Variant])
 
--- 'Char' and @[a]@ and 'Name' have 'Lift' instances 
-$(concatMapM deriveLift [''Grammar, ''Production, ''Variant, ''Symbol, ''NonEmpty, ''Terminal, ''NonTerminal])
-
+-- 'Char' and @[a]@ and 'Name' have 'Lift' instances
+$(concatMapM deriveLift [''Grammar, ''Production, ''Variant, ''Symbol, ''Terminal, ''NonTerminal])
 
 -- | exact because 'Terminal' is a @newtype@ not a @type@ alias
 terminals :: Traversal' Grammar Terminal
@@ -82,9 +81,12 @@ grammar'symbols :: Traversal' Grammar Symbol
 grammar'symbols = productions.each.rhs.each.symbols.each
 
 
+getStart :: Grammar -> Name
 getStart = unNonTerminal . view start
 
+getParts :: Grammar -> [String]
 getParts = uniques . map unTerminal . toListOf terminals
 
+getHoles :: Grammar -> [Name]
 getHoles = uniques . map unNonTerminal . toListOf nonTerminals
 

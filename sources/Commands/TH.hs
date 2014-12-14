@@ -16,11 +16,8 @@ import Commands.TH.Instance.Grammar
 import Commands.Text.Parsec
 import Commands.Grammar
 
-import Control.Lens
 import Data.List.NonEmpty (toList)
-import Text.InterpolatedString.Perl6
 
-import Data.Functor
 import Language.Haskell.TH
 import Language.Haskell.TH.Quote
 

@@ -3,7 +3,7 @@
 module Commands.TH.Data where
 import Commands.Grammar
 
-import Data.List.NonEmpty (NonEmpty(..),toList,head)
+import Data.List.NonEmpty (toList)
 
 import Data.Functor
 import Language.Haskell.TH

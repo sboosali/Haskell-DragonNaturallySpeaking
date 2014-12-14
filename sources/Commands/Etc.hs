@@ -1,7 +1,8 @@
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE OverloadedLists, TypeFamilies #-}
+{-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE ExplicitForAll, ScopedTypeVariables #-}
 module Commands.Etc where
+import Commands.Instances() 
 
 import Safe
 import Control.Monad.Catch
@@ -11,10 +12,8 @@ import qualified Data.Map as Map
 import Data.Tree (Tree(..))
 import Control.Applicative
 import Control.Monad
-import Control.Exception (throwIO) 
 import qualified Data.Set as Set
 import Language.Haskell.TH
-import GHC.Exts
 
 
 -- | transform from @Bool@, like @maybe@ or @either@
@@ -80,22 +79,6 @@ type Possibly a = (MonadThrow m) => m a
 eitherThrow :: (Exception e) => Either e a -> Possibly a
 eitherThrow = either throwM return
 
--- | any 'MonadThrow' instance must satisfy @throwM e >> f = throwM e@
--- 
--- the docs for 'Q.report' say "use 'fail' to stop". but 'fail' holds a 'String', where 'throwIO' holds an 'Exception'. from experiments/documentation, I'm pretty sure 'throwIO' short-circuits.
--- 
--- this instance seems to work, and I think I've satisfied the laws. but, by reading the documentation, not understanding the code. i.e. beware. 'Q' seems too cyclic, simplified:
--- 
--- * @class    (Monad m) => 'Quasi' m     where qF :: m a -> m a@
--- * @instance              'Quasi' 'Q'   where qF (Q a) = Q (qF a)@
--- * @instance              'Quasi' 'IO'  where qF _ = fail ""@
--- * @newtype  'Q' a =  Q { unQ ::  forall m. 'Quasi' m => m a  }@
--- 
--- what does (e.g.) @Q.report@ ever do? 'Q' and 'IO' are the only instances of 'Quasi'.
--- 
-instance MonadThrow Q where
- throwM exception = (runIO . throwIO) exception
-
 -- | see <https://github.com/nh2/haskell-ordnub>
 uniques :: (Ord a) => [a] -> [a]
 uniques l = go Set.empty l
@@ -133,12 +116,6 @@ findOn key next input
 --
 searchGraph :: (Ord a) => Tree a -> [a]
 searchGraph = map rootLabel . findOn rootLabel subForest
-
--- | idky this instance isn't in "GHC.Exts"
-instance (Ord k) => IsList (Map k v) where
-  type Item (Map k v) = (k,v)
-  fromList = Map.fromList
-  toList   = Map.toList
 
 -- | the line/column number of the currently pending splice
 --

@@ -141,5 +141,5 @@ main =  do
  benchmark "currentApplicationPathO" currentApplicationPathO
 
  -- about 1 ms
- benchmark "pressO" (pressO $ Press [] AKey)
+ -- benchmark "pressO" (pressO $ Press [] AKey)
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE StandaloneDeriving, DeriveGeneric #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 -- | copied from <http://hackage.haskell.org/package/data-default-instances-containers>
 --
 -- I think the orphan 'Generic' instances are okay, because you can't write manual 'Generic' (or 'Rep'?) instances in modern GHC anyway.
@@ -11,9 +12,6 @@ import Commands.Generic
 
 import Generics.Deriving
 
-import Data.Tree
-import Data.Map
-import Data.Set
 import Data.Int
 import Data.Word
 import Data.Monoid

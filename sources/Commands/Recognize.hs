@@ -7,9 +7,7 @@ import Commands.Etc
 import Text.InterpolatedString.Perl6
 
 import Data.Tree
-import Data.List.Split (splitOn)
 import Data.List (intercalate)
-import Control.Category ((>>>))
 import Language.Haskell.TH
 
 

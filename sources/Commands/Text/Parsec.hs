@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleContexts, RankNTypes #-}
-{-# LANGUAGE DeriveDataTypeable, StandaloneDeriving #-}
 -- |
 -- wraps "Text.Parsec"
 module Commands.Text.Parsec
@@ -7,15 +6,14 @@ module Commands.Text.Parsec
  , module Commands.Text.Parsec
 ) where
 import Commands.Etc
+import Commands.Instances()
 
 import Text.Parsec hiding (parse,space,many1,sepBy1,endBy1,sepEndBy1)
 import qualified Text.Parsec as Parsec
-import Data.List.NonEmpty ( NonEmpty(..),toList,head)
+import Data.List.NonEmpty (NonEmpty(..))
 
-import Control.Exception (Exception)
-import Control.Applicative hiding ((<|>),optional,many)
+import Control.Applicative (pure,(<$>),(<*>),(<*),(*>)) 
 import Data.Functor.Identity
-import Data.Typeable
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax (CharPos) 
 
@@ -26,10 +24,6 @@ import Language.Haskell.TH.Syntax (CharPos)
 -- i.e. we would want @Reader@ with @local@, if anything, not "non-@local@" @State@, hence the unit @State@ '()'.
 -- 
 type Parser input output = ParsecT [input] () Identity output
-
-deriving instance Typeable  ParseError
-instance          Exception ParseError
-
 
 -- | 
 --

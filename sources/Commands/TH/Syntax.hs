@@ -5,11 +5,10 @@
 -- defines the syntax tree and template parsers the "Commands.TH" module hierarchy uses.
 -- 
 module Commands.TH.Syntax where
-import Commands.Etc
 import Commands.Text.Parsec
 import Commands.Grammar
 
-import Data.List.NonEmpty (NonEmpty(..),toList,head)
+import Data.List.NonEmpty (NonEmpty(..))
 
 import Prelude hiding (head)
 import Control.Applicative hiding (many,(<|>))
